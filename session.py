@@ -2,8 +2,9 @@ import os
 import argparse
 import random
 import re
-from gpiozero import Button
-from signal import pause
+# Uncomment these if running on RaspberryPi
+# from gpiozero import Button
+# from signal import pause
 
 DATA_PATH = "data"
 
@@ -29,7 +30,7 @@ class SettingGenerator():
                     self.all_data[category].add(line.strip())
         
     def generate(self):
-        print(f"\nGenerating {self.target}")
+        print(f"\n\tGenerating {self.target}")
         setting_object = self.format
         match = re.findall(r"<.+?>", self.format)
 
@@ -38,7 +39,7 @@ class SettingGenerator():
             category_instance = random.choice(tuple(category_set))
             setting_object = setting_object.replace(category, category_instance)
         setting_object = setting_object.replace("- ", "-")
-        setting_object = setting_object.replace("\n", "\n\t")
+        # setting_object = setting_object.replace("\n", "\n\t")
         print(setting_object)
         self.log.append(setting_object)
         
