@@ -1,7 +1,11 @@
 import os
 import argparse
-import randGenerator
 import json
+import pickle
+
+import randGenerator
+import dice
+import musicPlayer
 # Necessary if being run on RaspberryPi
 try:
     from gpiozero import Button
@@ -10,6 +14,23 @@ except:
     pass
 
 DATA_PATH = "data"
+CAMPAIGN_PATH = "campaigns"
+
+def save_game(campaign, filename):
+    with open(os.path.join(CAMPAIGN_PATH, filename), 'wb') as outp:
+        pickle.dump(campaign, outp, pickle.HIGHEST_PROTOCOL)
+
+class Campaign():
+
+    def __init__(self):
+        self.name = "Campaign"
+        self.all_sessions = []
+        self.musicPlayer = musicPlayer.MusicPlayer()
+
+    def new_session(self):
+        self.session = Session()
+        self.all_sessions.append(self.session)
+        
 
 class Session():
 

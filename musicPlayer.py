@@ -6,3 +6,7 @@ Goals
 - Crossfade songs
 - Super easy mood selection
 """
+
+class MusicPlayer():
+
+    pass
