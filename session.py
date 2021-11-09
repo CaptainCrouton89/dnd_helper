@@ -2,9 +2,12 @@ import os
 import argparse
 import randGenerator
 import json
-# Uncomment these if running on RaspberryPi
-# from gpiozero import Button
-# from signal import pause
+# Necessary if being run on RaspberryPi
+try:
+    from gpiozero import Button
+    from signal import pause
+except:
+    pass
 
 DATA_PATH = "data"
 
