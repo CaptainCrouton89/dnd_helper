@@ -4,6 +4,8 @@ class Dice():
 
     log = []
 
+    
+
     # Can I use decorators to make these also spin the dial for the dice?
     @staticmethod
     def log_roll(dice, raw, results):

@@ -1,3 +1,5 @@
+#!/Library/Frameworks/Python.framework/Versions/3.9/bin/python3
+
 import os
 import argparse
 import json
@@ -38,6 +40,8 @@ class Session():
         self.location_generator = randGenerator.SettingGenerator(config["locations"], verbosity)
         self.settlement_generator = randGenerator.SettingGenerator(config["settlements"], verbosity)
         self.pi = pi
+
+        
 
     def start(self):
         pass
