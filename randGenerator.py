@@ -1,6 +1,7 @@
 import os
 import re
 import random
+import json
 
 DATA_PATH = "data"
 
@@ -19,11 +20,20 @@ class SettingGenerator():
         self.log = []
 
         for file in os.listdir(data_path):
+            if ".txt" not in file:
+                continue
             with open(os.path.join(data_path, file)) as f:
                 category = file[:-4]
                 self.all_data[category] = set()
                 for line in f:
                     self.all_data[category].add(line.strip())
+
+        for category, s in self.all_data.items():
+            self.all_data[category] = list(self.all_data[category])
+        print(self.all_data)
+        save_path = self.target+"_data.json"
+        with open(save_path, "w+") as f:
+            json.dump(self.all_data, f)
         
     def generate(self):
         print(f"\n\tGenerating {self.target}")

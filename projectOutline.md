@@ -7,6 +7,18 @@
     - Random Generator: Not system specific--always useful
     - Quick die roller
 
+## Hardware
+- Raspberry Pi Zero W, wifi and bluetooth support
+- Scrolling LCD screen mounted above
+- Battery powered
+- Array of buttons
+    - Require different functionality based on current "app"?
+    - Up/Down keys to change app, allows any number of apps
+    - Each app gets 8 buttons (4 under each thumb), along with 2 modifier keys?
+    - Power switch
+    - Restart button?
+- Should be robust, and pocket sized
+
 ## Campaign Tracker
 - Keep track of saved objects from Random Generator app
 - Gets notes uploaded from computer about things happening in game (session plans/notes)
