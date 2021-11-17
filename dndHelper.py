@@ -1,8 +1,13 @@
 import os
+import time
+import webbrowser
+import spotipy
+from spotipy.oauth2 import SpotifyClientCredentials
 import tkmacosx as tkm
 import json
 import random
 import constants as c
+from musicPlayer import MusicPlayer
 from session import Campaign, Session, save_game
 import tkinter as tk
 from tkinter import ttk 
@@ -30,8 +35,6 @@ default_mob = {
 vigor_scalar = [
     
 ]
-
-        # Should organize into different categories. Should autoreplace last in category unless you save it, in which case it's not replaced that session. The entire generation gets saved for that session.
 
 
 class ToolFrame(tk.Frame):
@@ -70,10 +73,18 @@ class App():
 
     def add_widgets(self):
         left_bar = tk.Frame(self.root)
-        central_content = tk.Frame(self.root)
+        left_bar.rowconfigure(0, weight=1)
+        left_bar.rowconfigure(1, weight=2)
+        left_bar.rowconfigure(2, weight=4)
 
-        # self.root.columnconfigure(0, weight=4)
-        # self.root.columnconfigure(1, weight=4)
+        central_content = tk.Frame(self.root)
+        central_content.rowconfigure(0, weight=1)
+        central_content.rowconfigure(1, weight=1)
+
+        self.root.columnconfigure(0, weight=2)
+        self.root.columnconfigure(1, weight=4)
+        self.root.rowconfigure(0, weight=4)
+
 
         self.music = MusicApp(left_bar)
         self.dice = DiceApp(left_bar)
@@ -82,15 +93,15 @@ class App():
         self.tracker = TrackerApp(central_content)
         self.notes = NotesApp(central_content)
 
-        self.music.grid(row=0, column=0)
-        self.dice.grid(row=1, column=0)
-        self.generator.grid(row=2, column=0)
+        self.music.grid(row=0, column=0, sticky="nsew")
+        self.dice.grid(row=1, column=0, sticky="nsew")
+        self.generator.grid(row=2, column=0, sticky="nsew")
 
-        self.tracker.grid(row=0, column=1)
-        self.notes.grid(row=1, column=1)
+        self.tracker.grid(row=0, column=1, sticky="nsew")
+        self.notes.grid(row=1, column=1, sticky="nsew")
 
-        left_bar.pack(side=tk.LEFT)
-        central_content.pack(side=tk.LEFT)
+        left_bar.pack(side=tk.LEFT, expand=True, fill="both")
+        central_content.pack(side=tk.LEFT, expand=True, fill="both")
 
 
 class DiceApp(ToolFrame):
@@ -176,7 +187,36 @@ class MusicApp(ToolFrame):
         super().__init__(master)
         self.root = master
         self.selected = None
+
+        with open("playlists.json") as f:
+            playlists = json.load(f)
+
+        self.music_player = MusicPlayer(playlists)
+
         self.add_widgets()
+        
+        self.bind("<Up>", self.increase_intensity)
+        self.bind("<Down>", self.decrease_intensity)
+        self.bind("<Right>", self.skip)
+        self.bind("<Left>", self.repeat)
+        self.bind("<BackSpace>", self.pause_resume)
+
+    def increase_intensity(self, event=None):
+        self.music_player.change_intensity(1)
+        print(self.music_player.get_playlist())
+
+    def decrease_intensity(self, event=None):
+        self.music_player.change_intensity(-1)
+        print(self.music_player.get_playlist())
+
+    def skip(self, event=None):
+        self.music_player.skip()
+
+    def pause_resume(self, event=None):
+        self.music_player.pause_resume()
+
+    def repeat(self, event=None):
+        self.music_player.repeat()
     
     def add_widgets(self):
         results = tk.Frame(master=self)
