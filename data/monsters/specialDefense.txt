@@ -1,0 +1,100 @@
+Allers own form: changed version of the normal shape
+Alters own form: complete polymorph
+Ambushes from above
+Ambushes from burrow, underneath mud, or water
+Armor plates
+Camouflage
+Cannot be attacked from behind (multiple eyes, radial symmetry)
+Cannot be damaged by metal
+Casts one or more defensive spells as natural attribute
+Catches or deflects missiles
+Chitin
+Climbs
+Creates illusionary doubles
+Creates shield or walls using a type of energy such as electricity, fire, water, air, sound, acid, plant, mental, or magical force.
+Damaged only by magic or silver weapons
+Different armor class in different places on body
+Dispels magic
+Fast moving
+Flies
+Four or more attacks
+Grows or shrinks
+Half damage from blunt weapons
+Half damage from cold
+Half damage from cutting weapons
+Half damage from fire
+Half damage from non-magical weapons
+Half damage from piercing weapons
+Hard to hit until it attacks
+Has an internal organ that can be used in making potions or creating magic items
+Has an unusual gland that creates energy of some kind: light, acid, magical force, fire, air, etc.
+Has different degrees of spell resistance/physical defense when in different body forms
+Has signature body part: gem
+Has signature body part: magic horn
+Has signature body part: magical eye
+Heals self
+Illusions distract attackers or divert attacks
+Immune to acid
+Immune to blunt weapons
+Immune to certain spells; acid
+Immune to certain spells; charm/sleep/mental control
+Immune to certain spells: cold
+Immune to certain spells: electrical
+Special Defense or Ability
+Immune to certain spells: lire
+Immune to certain spells: transmutation
+Immune to cold
+Immune to fire
+Immune to piercing weapons
+Immune to sharp weapons
+Immune to slashing weapons
+Improved/restored by cold attacks
+Improved/restored by electrical attacks
+Improved/restored by fire attacks
+Incorporeal travel/phases
+Ink-cloud type escape
+Its eggs are very valuable
+Jet propulsion like squid
+Leaps
+Leaps to attack
+Levitates/floats
+Minimum intelligence attribute required to inflict spell damage
+Minimum strength attribute required to cause physical damage
+Owns a signature item: amulet
+Owns a signature item: orb
+Owns an item it created internally then spat out or secreted; takes time to create another one
+Percentile magic resistance
+Pulls itself on strands it fires/throws
+Reflects all spells
+Reflects spells of particular type
+Regenerates
+Regenerates damage
+Rises from dead unless killed by particular substance (holy water, silver weapon, fire, etc)
+Secondary attack possible after creature hits with its primary attack
+Secondary or rear claws
+Shifts planes
+Splits or fissions when attacked by bladed weapons
+Splits or fissions when attacked by fire
+Stalks before attacking
+Summons or calls animal allies
+Summons or calls more of its own type
+Swims
+Swings from branches/ceilings
+Teleports
+Thick hide
+Three heads
+Time stop/slow of some kind
+Transforms self to energy form: acid
+Transforms self to energy form: air vortex
+Transforms self to energy form: electric
+Transforms self to energy form: fire/lava/heat
+Transforms self to energy form: ice/snow/pure cold
+Transforms self to energy form: magical force
+Transforms self to energy form: water vortex
+Turns incorporeal
+Turns into another type of animal/monster for combat
+Two heads
+Uses signature type of steed
+Uses signature type of vehicle
+Victims cannot be raised from dead
+Weakness: additional damage from energy form: acid, fire, water, air, earth, magical force

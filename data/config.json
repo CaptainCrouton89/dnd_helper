@@ -8,5 +8,10 @@
         "target": "settlement",
         "path": "settlements",
         "format": "\nFamous For: <prideOfTown> \nDomesticated Animal: <unusualDomesticatedAnimal> \nSubgroup: <groupWithinSettlement> \nMode of Dress: <modeOfDress>"
+    },
+    "monsters": {
+        "target": "monster",
+        "path": "monsters",
+        "format": "<distinctiveAttribute>\n<specialDefense>\n<specialAttack>"
     }
 }

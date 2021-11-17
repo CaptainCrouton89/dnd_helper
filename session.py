@@ -39,6 +39,7 @@ class Session():
     def __init__(self, config, pi=False, verbosity=0):
         self.location_generator = randGenerator.SettingGenerator(config["locations"], verbosity)
         self.settlement_generator = randGenerator.SettingGenerator(config["settlements"], verbosity)
+        self.monster_generator = randGenerator.SettingGenerator(config["monsters"], verbosity)
         self.pi = pi
 
         
@@ -62,6 +63,8 @@ class Session():
                     self.location_generator.generate()
                 elif k == "s":
                     self.settlement_generator.generate()
+                elif k == "m":
+                    self.monster_generator.generate()
 
 
 

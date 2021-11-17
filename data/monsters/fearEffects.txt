@@ -1,0 +1,10 @@
+Victim cannot take aggressive actions
+Victim changes sides
+Victim dies or has a chance of dying
+Victim drops all items in hand
+Victim flees
+Victim is completely paralyzed
+Victim is not paralyzed but cannot flee or advance
+Victim obeys
+Victim screams uncontrollably
+Victim surrenders

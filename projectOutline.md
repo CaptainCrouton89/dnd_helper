@@ -7,6 +7,11 @@
     - Random Generator: Not system specific--always useful
     - Quick die roller
 
+## Local Run?
+- App like my monster tracker app
+- Has all my features wrapped into one
+- Not as convenient as phone, but more tools, more powerful, faster development
+
 ## Hardware
 - Raspberry Pi Zero W, wifi and bluetooth support
 - Scrolling LCD screen mounted above
