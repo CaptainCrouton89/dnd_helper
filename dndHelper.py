@@ -34,86 +34,29 @@ vigor_scalar = [
         # Should organize into different categories. Should autoreplace last in category unless you save it, in which case it's not replaced that session. The entire generation gets saved for that session.
 
 
+class ToolFrame(tk.Frame):
     
-class DiceApp(tk.Frame):
+    def __init__(self, root, takefocus=1):
+        super().__init__(root, borderwidth=3, relief=tk.RAISED, 
+                            takefocus=takefocus, highlightthickness=3, highlightcolor="OrangeRed4", highlightbackground="gray80")
 
-    def __init__(self, root, config=None, takefocus=1):
-        super().__init__(root)
-        # super().__init__(master=root, height=100, width=100, borderwidth=3, relief=tk.RAISED, 
-        #                     takefocus=takefocus, highlightthickness=3, highlightcolor="OrangeRed4", highlightbackground="gray80")
-        self.root = root
-        self.selected = None
-        self.add_widgets()
-    
-    def add_widgets(self):
-        body = tk.Frame(master=self.root)
 
-        results = tk.Frame(master=body)
-        self.dice_results = tk.Label(results, text="10")
-        self.dice_results.pack(side=tk.TOP)
-        results.pack(side=tk.TOP)
+class BasicFrame(tk.Frame):
 
-        totals = tk.Frame(master=body)
-        self.dice_total = tk.Label(totals, text="10")
-        self.dice_total.pack(side=tk.LEFT)
-        self.dice_advg = tk.Label(totals, text="10")
-        self.dice_advg.pack(side=tk.LEFT)
-        self.dice_dsvg = tk.Label(totals, text="10")
-        self.dice_dsvg.pack(side=tk.LEFT)
-        totals.pack(side=tk.TOP)
-
-        body.pack()
-
+    pass
 
 
 class App():
 
     def __init__(self):
         self.root = tk.Tk()
-        self.add_widgets()
-
-    def add_widgets(self):
-        self.dice = DiceApp(self.root)
-        self.dice.pack()
-
-class BigApp():
-    # Tab through shelves
-    # s/a/c to select stance
-    # Command-R to roll: Result on right
-
-
-    def __init__(self):
-        self.root = tk.Tk()
-
-        self.root.title("Tracker")
-
+        self.root.title = "D&D Helper"
         self.state = False
+
         self.root.bind("<Control-f>", self.toggle_fullscreen)
         self.root.bind("<Escape>", self.end_fullscreen)
 
-        self.root.bind("<Command-n>", self.new_shelf)
-        self.root.bind("<Command-t>", self.next_turn)
-        self.root.bind("<Command-Shift-BackSpace>", self.delete_all)
-        self.root.bind("<Command-r>", self.roll)
-        self.root.bind("<Command-v>", self.copy_selected)
-        self.root.bind("<Command-s>", self.save_encounter)
-        self.root.bind("<Command-o>", self.load_encounter)
-
-        self.root.bind("<Control-n>", self.new_shelf)
-        self.root.bind("<Control-t>", self.next_turn)
-        self.root.bind("<Control-Shift-BackSpace>", self.delete_all)
-        self.root.bind("<Control-r>", self.roll)
-        self.root.bind("<Control-v>", self.copy_selected)
-        self.root.bind("<Control-s>", self.save_encounter)
-        self.root.bind("<Control-o>", self.load_encounter)
-
-        # self.root.bind("<Command-/>", self._focus)
-
-        self.shelves = []
-        self.focus_index = 0
-
         self.add_widgets()
-        self.new_shelf()
 
     def toggle_fullscreen(self, event=None):
         self.state = not self.state  # Just toggling the boolean
@@ -125,9 +68,217 @@ class BigApp():
         self.root.attributes("-fullscreen", False)
         return "break"
 
+    def add_widgets(self):
+        left_bar = tk.Frame(self.root)
+        central_content = tk.Frame(self.root)
+
+        # self.root.columnconfigure(0, weight=4)
+        # self.root.columnconfigure(1, weight=4)
+
+        self.music = MusicApp(left_bar)
+        self.dice = DiceApp(left_bar)
+        self.generator = GeneratorApp(left_bar)
+
+        self.tracker = TrackerApp(central_content)
+        self.notes = NotesApp(central_content)
+
+        self.music.grid(row=0, column=0)
+        self.dice.grid(row=1, column=0)
+        self.generator.grid(row=2, column=0)
+
+        self.tracker.grid(row=0, column=1)
+        self.notes.grid(row=1, column=1)
+
+        left_bar.pack(side=tk.LEFT)
+        central_content.pack(side=tk.LEFT)
+
+
+class DiceApp(ToolFrame):
+
+    def __init__(self, master):
+        super().__init__(master)
+        self.root = master
+        self.selected = None
+        self.add_widgets()
+
+        self.bind("<4>", self.roll4)
+        self.bind("<6>", self.roll6)
+        self.bind("<8>", self.roll8)
+        self.bind("<0>", self.roll10)
+        self.bind("<@>", self.roll12)
+        self.bind("<)>", self.roll20)
+
+        self.bind("<r>", self.reroll)
+        self.bind("<R>", self.reset)
+
+        self.current_roll = []
+
+    def roll(self, num):
+        result = random.randint(1, num)
+        die_pair = [num, result]
+        self.current_roll.append(die_pair)
+        self.update_text()
+
+    def reroll(self, event=None):
+        last_rolls = self.current_roll
+        self.current_roll = []
+        [self.roll(r[0]) for r in last_rolls]
+
+    def reset(self, event=None):
+        self.current_roll = []
+        self.update_text()
+
+    def update_text(self):
+        self.dice_results.config(text = [f"{r[1]}/{r[0]}" for r in self.current_roll])
+        self.dice_total.config(text = sum([r[1] for r in self.current_roll]))
+        sorted_results = sorted([r[1] for r in self.current_roll])
+        self.dice_advg.config(text = sum(sorted_results[-2:]))
+        self.dice_dsvg.config(text = sum(sorted_results[:2]))
+
+    def roll4(self, event=None):
+        self.roll(4)
+    
+    def roll6(self, event=None):
+        self.roll(6)
+
+    def roll8(self, event=None):
+        self.roll(8)
+
+    def roll10(self, event=None):
+        self.roll(10)
+
+    def roll12(self, event=None):
+        self.roll(12)
+
+    def roll20(self, event=None):
+        self.roll(20)
+
+    
+    def add_widgets(self):
+        results = tk.Frame(master=self)
+        self.dice_results = tk.Label(results, text="10")
+        self.dice_results.pack(side=tk.TOP)
+        results.pack(side=tk.TOP)
+
+        totals = tk.Frame(master=self)
+        self.dice_total = tk.Label(totals, text="10")
+        self.dice_total.pack(side=tk.LEFT)
+        self.dice_advg = tk.Label(totals, text="10")
+        self.dice_advg.pack(side=tk.LEFT)
+        self.dice_dsvg = tk.Label(totals, text="10")
+        self.dice_dsvg.pack(side=tk.LEFT)
+        totals.pack(side=tk.TOP)
+
+
+class MusicApp(ToolFrame):
+
+    def __init__(self, master):
+        super().__init__(master)
+        self.root = master
+        self.selected = None
+        self.add_widgets()
+    
+    def add_widgets(self):
+        results = tk.Frame(master=self)
+        self.dice_results = tk.Label(results, text="10")
+        self.dice_results.pack(side=tk.TOP)
+        results.pack(side=tk.TOP)
+
+        totals = tk.Frame(master=self)
+        self.dice_total = tk.Label(totals, text="10")
+        self.dice_total.pack(side=tk.LEFT)
+        self.dice_advg = tk.Label(totals, text="10")
+        self.dice_advg.pack(side=tk.LEFT)
+        self.dice_dsvg = tk.Label(totals, text="10")
+        self.dice_dsvg.pack(side=tk.LEFT)
+        totals.pack(side=tk.TOP)
+
+
+class NotesApp(ToolFrame):
+
+    def __init__(self, master):
+        super().__init__(master)
+        self.root = master
+        self.selected = None
+        self.add_widgets()
+    
+    def add_widgets(self):
+        results = tk.Frame(master=self)
+        self.dice_results = tk.Label(results, text="10")
+        self.dice_results.pack(side=tk.TOP)
+        results.pack(side=tk.TOP)
+
+        totals = tk.Frame(master=self)
+        self.dice_total = tk.Label(totals, text="10")
+        self.dice_total.pack(side=tk.LEFT)
+        self.dice_advg = tk.Label(totals, text="10")
+        self.dice_advg.pack(side=tk.LEFT)
+        self.dice_dsvg = tk.Label(totals, text="10")
+        self.dice_dsvg.pack(side=tk.LEFT)
+        totals.pack(side=tk.TOP)
+
+
+class GeneratorApp(ToolFrame):
+
+    def __init__(self, master):
+        super().__init__(master)
+        self.root = master
+        self.selected = None
+        self.add_widgets()
+    
+    def add_widgets(self):
+        results = tk.Frame(master=self)
+        self.dice_results = tk.Label(results, text="10")
+        self.dice_results.pack(side=tk.TOP)
+        results.pack(side=tk.TOP)
+
+        totals = tk.Frame(master=self)
+        self.dice_total = tk.Label(totals, text="10")
+        self.dice_total.pack(side=tk.LEFT)
+        self.dice_advg = tk.Label(totals, text="10")
+        self.dice_advg.pack(side=tk.LEFT)
+        self.dice_dsvg = tk.Label(totals, text="10")
+        self.dice_dsvg.pack(side=tk.LEFT)
+        totals.pack(side=tk.TOP)
+
+
+class TrackerApp(ToolFrame):
+    # Tab through shelves
+    # s/a/c to select stance
+    # Command-R to roll: Result on right
+
+
+    def __init__(self, master):
+        super().__init__(master)
+        
+        self.root = master
+
+        self.bind("<Command-n>", self.new_shelf)
+        self.bind("<Command-t>", self.next_turn)
+        self.bind("<Command-Shift-BackSpace>", self.delete_all)
+        self.bind("<Command-r>", self.roll)
+        self.bind("<Command-v>", self.copy_selected)
+        self.bind("<Command-s>", self.save_encounter)
+        self.bind("<Command-o>", self.load_encounter)
+
+        self.bind("<Control-n>", self.new_shelf)
+        self.bind("<Control-t>", self.next_turn)
+        self.bind("<Control-Shift-BackSpace>", self.delete_all)
+        self.bind("<Control-r>", self.roll)
+        self.bind("<Control-v>", self.copy_selected)
+        self.bind("<Control-s>", self.save_encounter)
+        self.bind("<Control-o>", self.load_encounter)
+
+        # self.root.bind("<Command-/>", self._focus)
+
+        self.shelves = []
+        self.focus_index = 0
+
+        self.add_widgets()
+        self.new_shelf()
 
     def add_widgets(self):
-        self.header = tk.Frame(master=self.root)
+        self.header = tk.Frame(master=self)
         self.header.grid(row=0, column=0)
 
         self.header.columnconfigure([0, 1, 2, 3, 4, 5, 6, 7], weight=1)
@@ -144,14 +295,11 @@ class BigApp():
         keybinds = tkm.Button(self.header, text="Keybinds", command=self.open_keybinds, takefocus=0)
         keybinds.grid(row=0, column=2, sticky="w")
 
-        self.content = tk.Frame(master=self.root)
+        self.content = tk.Frame(master=self)
         self.content.grid(row=1, column=0, sticky="w")
-        
-        self.dice = DiceApp(root=self.root)
-        self.dice.grid(row=2, column=0, sticky="w")
 
     def open_keybinds(self, event=None):
-        keybind_win = tk.Toplevel(self.root)
+        keybind_win = tk.Toplevel(self)
         keybind_win.title("Keybinds")
         text = tk.Label(keybind_win, anchor='w', justify=tk.LEFT, text=
             "\n\n\
