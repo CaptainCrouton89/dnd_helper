@@ -1,7 +1,0 @@
-{
-    "USERNAME": "CaptainCrouton89",
-    "CID": "d4c9970288fa43c8bbaabb3eea586e07",
-    "SECRET": "66a56047a25c4c2eb81d8b790ca0f5a9",
-    "REDIRECT_URI": "https://google.com",
-    "SCOPE": "app-remote-control user-library-read playlist-modify-private user-modify-playback-state"
-}
