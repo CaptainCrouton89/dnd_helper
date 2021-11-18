@@ -28,8 +28,10 @@ class MusicPlayer():
 
         self.sp = spotipy.Spotify(auth=token)
         self.user = self.sp.current_user()
+        
+        self.device = self.sp.devices()["devices"][0]["id"]
 
-        self.sp.shuffle(True)
+        self.sp.shuffle(True, self.device)
 
         self.theme = "terror"
         self.intensity = 0

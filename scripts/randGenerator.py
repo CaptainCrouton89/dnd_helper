@@ -7,13 +7,13 @@ DATA_PATH = "data"
 
 class SettingGenerator():
 
-    def __init__(self, config, default_quantity=1):
+    def __init__(self, config, text_path, default_quantity=1):
         self.default_quantity = default_quantity
         if not config:
             print('no data found')
             return
         self.target = config["target"]
-        data_path = os.path.join(DATA_PATH, config["path"])
+        data_path = os.path.join(text_path, config["path"])
         self.all_data = {}
         self.format = config["format"]
 

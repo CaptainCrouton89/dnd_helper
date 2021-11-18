@@ -13,5 +13,15 @@
         "target": "monster",
         "path": "monsters",
         "format": "<distinctiveAttribute>\n\n<specialDefense>\n\n<specialAttack>"
+    },
+    "characters": {
+        "target": "character",
+        "path": "npcs",
+        "format": "<traitsCombined>"
+    },
+    "names": {
+        "target": "name",
+        "path": "names",
+        "format": "<namesMale>, <namesMale>, <namesMale>\n\n<namesFemale>, <namesFemale>, <namesFemale>"
     }
 }

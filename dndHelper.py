@@ -8,15 +8,16 @@ import tkmacosx as tkm
 from functools import partial
 import json
 import random
-import constants as c
-from randGenerator import SettingGenerator
-from musicPlayer import MusicPlayer
-from session import Campaign, Session, save_game
+import scripts.constants as c
+from scripts.randGenerator import SettingGenerator
+from scripts.musicPlayer import MusicPlayer
 import tkinter as tk
 from tkinter import ttk 
 from tkinter.filedialog import askopenfile, asksaveasfile
 
 DATA_PATH = "data"
+TEXT_PATH = "text"
+PLAYLIST_PATH = "playlists"
 CAMPAIGN_PATH = "campaigns"
 
 default_mob = {
@@ -44,7 +45,7 @@ class AppTool(tk.Frame):
     
     def __init__(self, root, name, takefocus=1):
         super().__init__(root, borderwidth=2, relief=tk.RAISED, 
-                            takefocus=takefocus, highlightthickness=2, highlightcolor="OrangeRed4", highlightbackground="gray80")
+                            takefocus=takefocus, highlightthickness=3, highlightcolor="OrangeRed4", highlightbackground="gray80")
         self.app_name = name
 
 
@@ -79,10 +80,10 @@ class ScrollableFrame(ttk.Frame):
 APP_BINDINGS = {
     "t": "tracker",
     "d": "dice",
-    "m": "music",
-    "g":  "generator",
+    "p": "music",
+    "g": "generator",
     "s": "session_notes",
-    "w": "world_notes",
+    "e": "world_notes",
 }
 
 
@@ -97,7 +98,7 @@ class App():
         self.root.bind("<Escape>", self.end_fullscreen)
 
         for binding, _ in APP_BINDINGS.items():
-            self.root.bind(f"<{binding}>", self.focus_on_app)
+            self.root.bind(f"<Command-{binding}>", self.focus_on_app)
 
         self.add_widgets()
 
@@ -279,14 +280,13 @@ class MusicApp(AppTool):
         self.last_ambient_track = None
         self.last_amb_track_id = None
 
-        with open("moodPlaylists.json") as f:
+        with open(os.path.join(DATA_PATH, PLAYLIST_PATH, "moodPlaylists.json")) as f:
             moodPlaylists = json.load(f)
 
-        with open("ambiencePlaylists.json") as f:
+        with open(os.path.join(DATA_PATH, PLAYLIST_PATH, "ambiencePlaylists.json")) as f:
             ambiencePlaylists = json.load(f)
 
         self.music_player = MusicPlayer(moodPlaylists, ambiencePlaylists)
-
 
         self.current_track = tk.StringVar()
         self.current_track.set("<no song>")
@@ -464,12 +464,16 @@ class GeneratorApp(AppTool):
         self.root = master
         self.selected = None
 
-        with open(os.path.join(DATA_PATH, "config.json")) as f:
+        text_data_path = os.path.join(DATA_PATH, TEXT_PATH)
+
+        with open(os.path.join(text_data_path, "config.json")) as f:
             config = json.load(f)
 
-        self.location_generator = SettingGenerator(config["locations"], default_quantity=3)
-        self.settlement_generator = SettingGenerator(config["settlements"])
-        self.monster_generator = SettingGenerator(config["monsters"])
+        self.location_generator = SettingGenerator(config["locations"], text_data_path, default_quantity=3)
+        self.settlement_generator = SettingGenerator(config["settlements"], text_data_path)
+        self.monster_generator = SettingGenerator(config["monsters"], text_data_path)
+        self.character_generator = SettingGenerator(config["characters"], text_data_path, default_quantity=2)
+        # self.name_generator = SettingGenerator(config["names"], text_data_path, default_quantity=2)
 
         self.add_widgets()
 
@@ -486,19 +490,24 @@ class GeneratorApp(AppTool):
 
         generators = BasicFrame(self)
         generators.pack(side=tk.TOP, fill="x")
+        generators.columnconfigure((0, 1), weight=1)
 
         # Generator buttons
         location = tkm.Button(generators, text="Location",
                                 command=partial(self.generate, self.location_generator), takefocus=0)
-        location.pack(side=tk.LEFT, expand=True, fill="both")
+        location.grid(row=0, column=0, sticky="nsew")
 
         settlement = tkm.Button(generators, text="Settlement",
                                 command=partial(self.generate, self.settlement_generator), takefocus=0)
-        settlement.pack(side=tk.LEFT, expand=True, fill="both")
+        settlement.grid(row=0, column=1, sticky="nsew")
 
         monster = tkm.Button(generators, text="Monster",
                                 command=partial(self.generate, self.monster_generator), takefocus=0)
-        monster.pack(side=tk.LEFT, expand=True, fill="both")
+        monster.grid(row=1, column=0, sticky="nsew")
+
+        character = tkm.Button(generators, text="Character",
+                                command=partial(self.generate, self.character_generator), takefocus=0)
+        character.grid(row=1, column=1, sticky="nsew")
 
 
 class WorkspaceApp(AppTool):
