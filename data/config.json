@@ -2,16 +2,16 @@
     "locations": {
         "target": "location",
         "path": "locations",
-        "format": "\n<structureDescription> <structure> <feature1> <feature2>"
+        "format": "<structureDescription> <structure> <feature1> <feature2>"
     },
     "settlements": {
         "target": "settlement",
         "path": "settlements",
-        "format": "\nFamous For: <prideOfTown> \nDomesticated Animal: <unusualDomesticatedAnimal> \nSubgroup: <groupWithinSettlement> \nMode of Dress: <modeOfDress>"
+        "format": "Famous For: <prideOfTown> \n\nDomesticated Animal: <unusualDomesticatedAnimal> \n\nSubgroup: <groupWithinSettlement> \n\nMode of Dress: <modeOfDress>"
     },
     "monsters": {
         "target": "monster",
         "path": "monsters",
-        "format": "<distinctiveAttribute>\n<specialDefense>\n<specialAttack>"
+        "format": "<distinctiveAttribute>\n\n<specialDefense>\n\n<specialAttack>"
     }
 }

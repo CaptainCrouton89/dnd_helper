@@ -7,11 +7,11 @@ DATA_PATH = "data"
 
 class SettingGenerator():
 
-    def __init__(self, config, verbosity):
+    def __init__(self, config, default_quantity=1):
+        self.default_quantity = default_quantity
         if not config:
             print('no data found')
             return
-        self.verbosity = verbosity
         self.target = config["target"]
         data_path = os.path.join(DATA_PATH, config["path"])
         self.all_data = {}
@@ -36,18 +36,22 @@ class SettingGenerator():
         #     json.dump(self.all_data, f)
         
     def generate(self):
-        print(f"\n\tGenerating {self.target}")
-        setting_object = self.format
-        match = re.findall(r"<.+?>", self.format)
+        # print(f"\n\tGenerating {self.target}")
+        gen_text = []
+        for _ in range(self.default_quantity):
+            setting_object = self.format
+            match = re.findall(r"<.+?>", self.format)
 
-        for category in match:
-            category_set = self.all_data[category.strip("<>")]
-            category_instance = random.choice(tuple(category_set))
-            setting_object = setting_object.replace(category, category_instance)
-        setting_object = setting_object.replace("- ", "-")
-        # setting_object = setting_object.replace("\n", "\n\t")
-        print(setting_object)
-        self.log.append(setting_object)
+            for category in match:
+                category_set = self.all_data[category.strip("<>")]
+                category_instance = random.choice(tuple(category_set))
+                setting_object = setting_object.replace(category, category_instance)
+            setting_object = setting_object.replace("- ", "-")
+            # setting_object = setting_object.replace("\n", "\n\t")
+            # print(setting_object)
+            gen_text.append(setting_object)
+            self.log.append(setting_object)
+        return gen_text
         
     def print_history(self):
         for setting_object in self.log:

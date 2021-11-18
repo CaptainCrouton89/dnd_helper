@@ -2,11 +2,14 @@ import os
 import time
 import webbrowser
 import spotipy
+import warnings
 from spotipy.oauth2 import SpotifyClientCredentials
 import tkmacosx as tkm
+from functools import partial
 import json
 import random
 import constants as c
+from randGenerator import SettingGenerator
 from musicPlayer import MusicPlayer
 from session import Campaign, Session, save_game
 import tkinter as tk
@@ -37,16 +40,50 @@ vigor_scalar = [
 ]
 
 
-class ToolFrame(tk.Frame):
+class AppTool(tk.Frame):
     
-    def __init__(self, root, takefocus=1):
-        super().__init__(root, borderwidth=3, relief=tk.RAISED, 
-                            takefocus=takefocus, highlightthickness=3, highlightcolor="OrangeRed4", highlightbackground="gray80")
+    def __init__(self, root, name, takefocus=1):
+        super().__init__(root, borderwidth=2, relief=tk.RAISED, 
+                            takefocus=takefocus, highlightthickness=2, highlightcolor="OrangeRed4", highlightbackground="gray80")
+        self.app_name = name
 
 
 class BasicFrame(tk.Frame):
 
-    pass
+    def __init__(self, root):
+        super().__init__(root, borderwidth=2, relief=tk.RAISED)
+
+
+class ScrollableFrame(ttk.Frame):
+    def __init__(self, container, *args, **kwargs):
+        super().__init__(container, *args, **kwargs)
+        canvas = tk.Canvas(self)
+        scrollbar = ttk.Scrollbar(self, orient="vertical", command=canvas.yview)
+        self.scrollable_frame = ttk.Frame(canvas)
+
+        self.scrollable_frame.bind(
+            "<Configure>",
+            lambda e: canvas.configure(
+                scrollregion=canvas.bbox("all")
+            )
+        )
+
+        canvas.create_window((0, 0), window=self.scrollable_frame, anchor="nw")
+
+        canvas.configure(yscrollcommand=scrollbar.set)
+
+        canvas.pack(side="left", fill="both", expand=True)
+        scrollbar.pack(side="right", fill="y")
+
+
+APP_BINDINGS = {
+    "t": "tracker",
+    "d": "dice",
+    "m": "music",
+    "g":  "generator",
+    "s": "session_notes",
+    "w": "world_notes",
+}
 
 
 class App():
@@ -58,6 +95,9 @@ class App():
 
         self.root.bind("<Control-f>", self.toggle_fullscreen)
         self.root.bind("<Escape>", self.end_fullscreen)
+
+        for binding, _ in APP_BINDINGS.items():
+            self.root.bind(f"<{binding}>", self.focus_on_app)
 
         self.add_widgets()
 
@@ -71,53 +111,87 @@ class App():
         self.root.attributes("-fullscreen", False)
         return "break"
 
+    def focus_on_app(self, event=None):
+        k = event.keysym
+        app_name = APP_BINDINGS[k]
+        for app in self.all_apps:
+            if app.app_name == app_name:
+                app.focus_set()
+        
+
     def add_widgets(self):
+        # Set up overall grid
+        self.root.columnconfigure(0, weight=0)
+        self.root.columnconfigure(1, weight=0)
+
+        self.root.rowconfigure(0, weight=4)
+        self.root.rowconfigure(1, weight=4)
+
+        # Set up left_bar
         left_bar = tk.Frame(self.root)
-        left_bar.rowconfigure(0, weight=1)
-        left_bar.rowconfigure(1, weight=2)
+        left_bar.grid(row=0, column=0, rowspan=2, sticky="nsew")
+        # left_bar.pack(side=tk.LEFT, expand=True, fill="both")
+
+        left_bar.rowconfigure((0, 1), weight=0)
         left_bar.rowconfigure(2, weight=4)
 
+        self.music = MusicApp(left_bar)
+        self.music.grid(row=0, column=0, sticky="nsew")
+
+        self.dice = DiceApp(left_bar)
+        self.dice.grid(row=1, column=0, sticky="nsew")
+
+        self.generator = GeneratorApp(left_bar)       
+        self.generator.grid(row=2, column=0, sticky="nsew")
+
+        # Set up central_content
         central_content = tk.Frame(self.root)
+        central_content.grid(row=0, column=1, rowspan=2, sticky="nsew")
+        # central_content.pack(side=tk.LEFT, expand=True, fill="both")
+
         central_content.rowconfigure(0, weight=1)
         central_content.rowconfigure(1, weight=1)
 
-        self.root.columnconfigure(0, weight=2)
-        self.root.columnconfigure(1, weight=4)
-        self.root.rowconfigure(0, weight=4)
+        # central_content_tabs = ttk.Notebook(central_content)
+        # # central_content_tabs.grid(row=0, column=0, sticky="nsew")
+
+        # self.tracker = TrackerApp(central_content_tabs)
+        # central_content_tabs.add(self.tracker, text ='Combat')
+        
+        # self.session_notes = SessionNotesApp(central_content_tabs)
+        # central_content_tabs.add(self.session_notes, text ='Notes')
+
+        self.workspace = WorkspaceApp(central_content)
+        self.workspace.grid(row=0, column=0, sticky="nsew")
+
+        self.world_notes = WorldNotesApp(central_content)
+        self.world_notes.grid(row=1, column=0, sticky="nsew")
+
+        # All apps
+        self.all_apps = [
+            self.dice,
+            self.music,
+            self.generator,
+            self.workspace,
+            self.world_notes
+        ]
+       
 
 
-        self.music = MusicApp(left_bar)
-        self.dice = DiceApp(left_bar)
-        self.generator = GeneratorApp(left_bar)
-
-        self.tracker = TrackerApp(central_content)
-        self.notes = NotesApp(central_content)
-
-        self.music.grid(row=0, column=0, sticky="nsew")
-        self.dice.grid(row=1, column=0, sticky="nsew")
-        self.generator.grid(row=2, column=0, sticky="nsew")
-
-        self.tracker.grid(row=0, column=1, sticky="nsew")
-        self.notes.grid(row=1, column=1, sticky="nsew")
-
-        left_bar.pack(side=tk.LEFT, expand=True, fill="both")
-        central_content.pack(side=tk.LEFT, expand=True, fill="both")
-
-
-class DiceApp(ToolFrame):
+class DiceApp(AppTool):
 
     def __init__(self, master):
-        super().__init__(master)
+        super().__init__(master, "dice")
         self.root = master
         self.selected = None
         self.add_widgets()
 
-        self.bind("<4>", self.roll4)
-        self.bind("<6>", self.roll6)
-        self.bind("<8>", self.roll8)
-        self.bind("<0>", self.roll10)
-        self.bind("<@>", self.roll12)
-        self.bind("<)>", self.roll20)
+        self.bind("<Key-4>", self.rollx)
+        self.bind("<Key-6>", self.rollx)
+        self.bind("<Key-8>", self.rollx)
+        self.bind("<Key-0>", self.rollx)
+        self.bind("<Key-@>", self.rollx)
+        self.bind("<Key-)>", self.rollx)
 
         self.bind("<r>", self.reroll)
         self.bind("<R>", self.reset)
@@ -140,156 +214,371 @@ class DiceApp(ToolFrame):
         self.update_text()
 
     def update_text(self):
+        self.current_roll.sort(key = lambda x: x[0])
         self.dice_results.config(text = [f"{r[1]}/{r[0]}" for r in self.current_roll])
         self.dice_total.config(text = sum([r[1] for r in self.current_roll]))
         sorted_results = sorted([r[1] for r in self.current_roll])
         self.dice_advg.config(text = sum(sorted_results[-2:]))
         self.dice_dsvg.config(text = sum(sorted_results[:2]))
 
-    def roll4(self, event=None):
-        self.roll(4)
-    
-    def roll6(self, event=None):
-        self.roll(6)
-
-    def roll8(self, event=None):
-        self.roll(8)
-
-    def roll10(self, event=None):
-        self.roll(10)
-
-    def roll12(self, event=None):
-        self.roll(12)
-
-    def roll20(self, event=None):
-        self.roll(20)
-
+    def rollx(self, event=None):
+        k = event.keysym
+        if k == "4":
+            self.roll(4)
+        elif k == "6":
+            self.roll(6)
+        elif k == "8":
+            self.roll(8)
+        elif k == "0":
+            self.roll(10)
+        elif k == "at":
+            self.roll(12)
+        elif k == "parenright":
+            self.roll(20)
     
     def add_widgets(self):
-        results = tk.Frame(master=self)
-        self.dice_results = tk.Label(results, text="10")
+        self.rowconfigure(0, weight=2)
+        self.rowconfigure(1, weight=4)
+
+        # Header
+        header = tk.Frame(self)
+        # header.grid(row=0, column=0, sticky="nsew")
+        header.pack(side=tk.TOP)
+
+        self.dice_results = tk.Label(header, fg="gray", text="")
         self.dice_results.pack(side=tk.TOP)
+
+        # Dice Results
+        results = tk.Frame(self)
+        # results.grid(row=1, column=0, sticky="nsew")
         results.pack(side=tk.TOP)
 
-        totals = tk.Frame(master=self)
-        self.dice_total = tk.Label(totals, text="10")
-        self.dice_total.pack(side=tk.LEFT)
-        self.dice_advg = tk.Label(totals, text="10")
-        self.dice_advg.pack(side=tk.LEFT)
-        self.dice_dsvg = tk.Label(totals, text="10")
-        self.dice_dsvg.pack(side=tk.LEFT)
-        totals.pack(side=tk.TOP)
+        results.columnconfigure((0, 2), weight=2)
+        results.columnconfigure(1, weight=5)
+
+        self.dice_advg = tk.Label(results, text="0", fg="gray", font=("Callibri",24), justify="center")
+        self.dice_advg.pack(side=tk.LEFT, expand=True, fill="both")
+        # self.dice_total.grid(row=0, column=1, sticky="nsew")
+
+        self.dice_total = tk.Label(results, text="0", font=("Callibri",48), justify="center")
+        self.dice_total.pack(side=tk.LEFT, expand=True, fill="both")
+        # self.dice_advg.grid(row=0, column=0, sticky="nsew")
+
+        self.dice_dsvg = tk.Label(results, text="0", fg="gray", font=("Callibri",24), justify="center")
+        # self.dice_dsvg.grid(row=0, column=2, sticky="nsew")
+        self.dice_dsvg.pack(side=tk.LEFT, expand=True, fill="both")
 
 
-class MusicApp(ToolFrame):
+class MusicApp(AppTool):
 
     def __init__(self, master):
-        super().__init__(master)
+        super().__init__(master, "music")
         self.root = master
         self.selected = None
+        self.playing_theme = True
+        self.last_ambient_track = None
+        self.last_amb_track_id = None
 
-        with open("playlists.json") as f:
-            playlists = json.load(f)
+        with open("moodPlaylists.json") as f:
+            moodPlaylists = json.load(f)
 
-        self.music_player = MusicPlayer(playlists)
+        with open("ambiencePlaylists.json") as f:
+            ambiencePlaylists = json.load(f)
+
+        self.music_player = MusicPlayer(moodPlaylists, ambiencePlaylists)
+
+
+        self.current_track = tk.StringVar()
+        self.current_track.set("<no song>")
+        self.next_track = tk.StringVar()
+        self.next_track.set("<no song>")
+        self.prev_track = tk.StringVar()
+        self.prev_track.set("<no song>")
+        self.amb_track_text = tk.StringVar()
+        self.amb_track_text.set("<last ambient>")
 
         self.add_widgets()
+
+        self.bind("<C>", self.set_bound_theme)
+        self.bind("<J>", self.set_bound_theme)
+        self.bind("<L>", self.set_bound_theme)
+        self.bind("<T>", self.set_bound_theme)
+
+        self.bind("<h>", self.hide_ambient_tracks)
+        self.bind("<a>", self.play_last_ambient)
         
-        self.bind("<Up>", self.increase_intensity)
-        self.bind("<Down>", self.decrease_intensity)
+        self.bind("<Up>", self.decrease_intensity)
+        self.bind("<Down>", self.increase_intensity)
         self.bind("<Right>", self.skip)
         self.bind("<Left>", self.repeat)
         self.bind("<BackSpace>", self.pause_resume)
+        # self.bind("<?>", self.get_current_track)
+
+    def set_bound_theme(self, event=None):
+        k = event.keysym
+        if k == "C":
+            self.set_theme("Curiousity>Horror")
+        if k == "J":
+            self.set_theme("Joy>Sad")
+        if k == "L":
+            self.set_theme("Locations")
+        if k == "T":
+            self.set_theme("Tension>Conflict")
+    
+    def set_theme(self, mood):
+        self.playing_theme = True
+        self.focus_set()
+        self.music_player.set_theme(mood)
+        self.update_current()
+
+    def set_ambient_track(self, track_id, track_name):
+        self.playing_theme = False
+        self.last_ambient_track = track_name
+        self.last_amb_track_id = track_id
+        self.force_repeat()
+        self.hide_ambient_tracks()
+        self.focus_set()
+        self.music_player.set_ambient_track(track_id)
+        self.update_current()
+
+    def show_ambient_tracks(self, ambient_category):
+        self.focus_set()
+        self.ambience_track_selector.pack(expand=True, fill="both")
+        self.ambience_category_selector.pack_forget()
+        tracks = self.music_player.get_tracks_from_playlist(ambient_category)
+        for i, (track_name, track_id) in enumerate(tracks.items()):
+            button = tkm.Button(self.ambience_track_selector, text=track_name, 
+                                command=partial(self.set_ambient_track, track_id, track_name), takefocus=0)
+            button.grid(row=i, column=0, sticky="ew")
 
     def increase_intensity(self, event=None):
         self.music_player.change_intensity(1)
         print(self.music_player.get_playlist())
+        self.update_current()
 
     def decrease_intensity(self, event=None):
         self.music_player.change_intensity(-1)
         print(self.music_player.get_playlist())
+        self.update_current()
 
     def skip(self, event=None):
         self.music_player.skip()
+        self.update_current()
 
     def pause_resume(self, event=None):
         self.music_player.pause_resume()
 
+    def play_last_ambient(self, event=None):
+        self.set_ambient_track(self.last_amb_track_id, self.last_ambient_track)
+
     def repeat(self, event=None):
         self.music_player.repeat()
+        self.update_current()
+
+    def force_repeat(self):
+        self.music_player.repeat(force_on=True)
+        self.update_current()
+
+    def update_current(self):
+        if self.playing_theme:
+            self.current_track.set(self.music_player.get_playlist())
+            self.next_track.set(self.music_player.get_playlist(-1))
+            self.prev_track.set(self.music_player.get_playlist(1))
+        else:
+            self.current_track.set(self.music_player.get_current_track())
+            self.prev_track.set("")
+            if self.music_player.repeating:
+                self.next_track.set("R")
+            else:
+                self.next_track.set("")
+            self.amb_track_text.set(self.last_ambient_track)
+
+    def hide_ambient_tracks(self, event=None):
+        self.ambience_category_selector.pack(expand=True, fill="both")
+        self.ambience_track_selector.pack_forget()
     
     def add_widgets(self):
-        results = tk.Frame(master=self)
-        self.dice_results = tk.Label(results, text="10")
-        self.dice_results.pack(side=tk.TOP)
-        results.pack(side=tk.TOP)
+        current_info = BasicFrame(self)
+        # current_info.grid(row=0, column=0, sticky="nsew")
+        current_info.pack(side=tk.TOP, expand=True, fill="both")
+        current_info.columnconfigure((0, 1, 2), weight=1)
 
-        totals = tk.Frame(master=self)
-        self.dice_total = tk.Label(totals, text="10")
-        self.dice_total.pack(side=tk.LEFT)
-        self.dice_advg = tk.Label(totals, text="10")
-        self.dice_advg.pack(side=tk.LEFT)
-        self.dice_dsvg = tk.Label(totals, text="10")
-        self.dice_dsvg.pack(side=tk.LEFT)
-        totals.pack(side=tk.TOP)
+        # Mood selection
+        mood_selector = BasicFrame(self)
+        # mood_selector.grid(row=1, column=0, sticky="nsew")
+        mood_selector.pack(side=tk.TOP, expand=True, fill="both")
+        mood_selector.columnconfigure((0, 1), weight=1)
+
+        all_moods = []
+        mood_plists = self.music_player.get_mood_plists()
+        for i, mood_plist in enumerate(mood_plists):
+            button = tkm.Button(mood_selector, text=mood_plist,
+                                command=partial(self.set_theme, mood_plist), takefocus=0)
+            button.grid(row=i//2, column=i%2, sticky="ew")
+            all_moods.append(button)
+
+        ambience_selector = BasicFrame(self)
+        # ambience_selector.grid(row=2, column=0, sticky="nsew")
+        ambience_selector.pack(side=tk.TOP, expand=True, fill="both")
+
+        self.ambience_category_selector = BasicFrame(ambience_selector)
+        self.ambience_category_selector.pack(expand=True, fill="both")
+        self.ambience_track_selector = BasicFrame(ambience_selector)
+
+        all_ambience = []
+        ambience_plists = self.music_player.get_ambient_plists()
+        for i, ambience_plist in enumerate(ambience_plists):
+            button = tkm.Button(self.ambience_category_selector, text=ambience_plist, 
+                                command=partial(self.show_ambient_tracks, ambience_plist), takefocus=0)
+            button.grid(row=i, column=0, sticky="ew")
+            all_ambience.append(button)
+
+        self.current_track_text = tk.Label(current_info, textvariable=self.current_track, font=("Helvetica",14), justify="center")
+        self.current_track_text.grid(row=0, column=1, sticky="nsew")
+        self.next_track_text = tk.Label(current_info, textvariable=self.next_track, fg="gray", justify="center")
+        self.next_track_text.grid(row=0, column=0, sticky="nsew")
+        self.prev_track_text = tk.Label(current_info, textvariable=self.prev_track, fg="gray", justify="center")
+        self.prev_track_text.grid(row=0, column=2, sticky="nsew")
+
+        self.ambient_last_track_text = tk.Label(current_info, textvariable=self.amb_track_text, fg="gray", justify="center")
+        self.ambient_last_track_text.grid(row=1, column=1, sticky="nsew")
 
 
-class NotesApp(ToolFrame):
+class SessionNotesApp(AppTool):
+
+    def __init__(self, master):
+        super().__init__(master, "session_notes")
+        self.root = master
+        self.selected = None
+        self.add_widgets()
+    
+    def add_widgets(self):
+        self.notes = tk.Text(self, height=4, wrap="word", takefocus=0, bg="white", fg="black")
+        self.notes.pack(expand=True, fill="both")
+
+
+class GeneratorApp(AppTool):
+
+    def __init__(self, master):
+        super().__init__(master, "generator")
+        self.root = master
+        self.selected = None
+
+        with open(os.path.join(DATA_PATH, "config.json")) as f:
+            config = json.load(f)
+
+        self.location_generator = SettingGenerator(config["locations"], default_quantity=3)
+        self.settlement_generator = SettingGenerator(config["settlements"])
+        self.monster_generator = SettingGenerator(config["monsters"])
+
+        self.add_widgets()
+
+    def generate(self, generator):
+        self.focus_set()
+        text = generator.generate()
+        text = "\n\n".join([str(elem) for elem in text])
+        self.generated_text.delete("1.0","end")
+        self.generated_text.insert(tk.INSERT, text)
+    
+    def add_widgets(self):
+        self.generated_text = tk.Text(self, height=15, width=30, wrap="word", takefocus=0, bg="white", fg="black")
+        self.generated_text.pack(side=tk.TOP, expand=True, fill="both")
+
+        generators = BasicFrame(self)
+        generators.pack(side=tk.TOP, fill="x")
+
+        # Generator buttons
+        location = tkm.Button(generators, text="Location",
+                                command=partial(self.generate, self.location_generator), takefocus=0)
+        location.pack(side=tk.LEFT, expand=True, fill="both")
+
+        settlement = tkm.Button(generators, text="Settlement",
+                                command=partial(self.generate, self.settlement_generator), takefocus=0)
+        settlement.pack(side=tk.LEFT, expand=True, fill="both")
+
+        monster = tkm.Button(generators, text="Monster",
+                                command=partial(self.generate, self.monster_generator), takefocus=0)
+        monster.pack(side=tk.LEFT, expand=True, fill="both")
+
+
+class WorkspaceApp(AppTool):
+
+    def __init__(self, master):
+        super().__init__(master, "world_notes")
+        self.root = master
+        self.selected = None
+        self.add_widgets()
+
+    def add_widgets(self):
+        contents = ttk.Notebook(self)
+        contents.pack(expand=True, fill="both")
+
+        tracker = TrackerApp(contents)
+        contents.add(tracker, text ='Tracker')
+
+        session_notes = EntityCollection(contents)
+        contents.add(session_notes, text ='Session Notes')
+
+
+class WorldNotesApp(AppTool):
+
+    def __init__(self, master):
+        super().__init__(master, "world_notes")
+        self.root = master
+        self.selected = None
+        self.add_widgets()
+
+    def add_widgets(self):
+        contents = ttk.Notebook(self)
+        contents.pack(expand=True, fill="both")
+
+        locations = EntityCollection(contents)
+        contents.add(locations, text ='Locations')
+
+        entities = EntityCollection(contents)
+        contents.add(entities, text ='Entities')
+
+
+class EntityCollection(tk.Frame):
 
     def __init__(self, master):
         super().__init__(master)
         self.root = master
         self.selected = None
         self.add_widgets()
-    
+
     def add_widgets(self):
-        results = tk.Frame(master=self)
-        self.dice_results = tk.Label(results, text="10")
-        self.dice_results.pack(side=tk.TOP)
-        results.pack(side=tk.TOP)
-
-        totals = tk.Frame(master=self)
-        self.dice_total = tk.Label(totals, text="10")
-        self.dice_total.pack(side=tk.LEFT)
-        self.dice_advg = tk.Label(totals, text="10")
-        self.dice_advg.pack(side=tk.LEFT)
-        self.dice_dsvg = tk.Label(totals, text="10")
-        self.dice_dsvg.pack(side=tk.LEFT)
-        totals.pack(side=tk.TOP)
+        entry = WorldEntityEntry(self)
+        entry.pack(side=tk.TOP, expand=True, fill="x")
 
 
-class GeneratorApp(ToolFrame):
+class WorldEntityEntry(BasicFrame):
 
     def __init__(self, master):
         super().__init__(master)
         self.root = master
         self.selected = None
         self.add_widgets()
-    
+
     def add_widgets(self):
-        results = tk.Frame(master=self)
-        self.dice_results = tk.Label(results, text="10")
-        self.dice_results.pack(side=tk.TOP)
-        results.pack(side=tk.TOP)
+        header = tk.Frame(self)
+        header.pack(side=tk.TOP, expand=True, fill="x")
 
-        totals = tk.Frame(master=self)
-        self.dice_total = tk.Label(totals, text="10")
-        self.dice_total.pack(side=tk.LEFT)
-        self.dice_advg = tk.Label(totals, text="10")
-        self.dice_advg.pack(side=tk.LEFT)
-        self.dice_dsvg = tk.Label(totals, text="10")
-        self.dice_dsvg.pack(side=tk.LEFT)
-        totals.pack(side=tk.TOP)
+        self.title = tk.Entry(header)
+        self.title.pack(side=tk.LEFT)
+
+        self.notes = tk.Text(self, height=4, wrap="word", takefocus=0, bg="white", fg="black")
+        self.notes.pack(side=tk.TOP, expand=True, fill="both")
 
 
-class TrackerApp(ToolFrame):
+class TrackerApp(AppTool):
     # Tab through shelves
     # s/a/c to select stance
     # Command-R to roll: Result on right
 
 
     def __init__(self, master):
-        super().__init__(master)
+        super().__init__(master, "tracker")
         
         self.root = master
 
@@ -318,7 +607,7 @@ class TrackerApp(ToolFrame):
         self.new_shelf()
 
     def add_widgets(self):
-        self.header = tk.Frame(master=self)
+        self.header = tk.Frame(self)
         self.header.grid(row=0, column=0)
 
         self.header.columnconfigure([0, 1, 2, 3, 4, 5, 6, 7], weight=1)
@@ -444,6 +733,7 @@ class TrackerApp(ToolFrame):
     def copy_selected(self, event=None):
         shelf = self.root.focus_get()
         shelf.copy()
+
 
 class MobShelf(tk.Frame):
 
