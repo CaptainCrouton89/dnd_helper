@@ -23,6 +23,7 @@ class GeneratorApp(tp.AppTool):
         self.settlement_generator = SettingGenerator(config["settlements"], text_data_path)
         self.monster_generator = SettingGenerator(config["monsters"], text_data_path)
         self.character_generator = SettingGenerator(config["characters"], text_data_path, default_quantity=1)
+        self.thing_generator = SettingGenerator(config["things"], text_data_path, default_quantity=1)
         # self.name_generator = SettingGenerator(config["names"], text_data_path, default_quantity=2)
 
         self.add_widgets(config)
@@ -50,9 +51,9 @@ class GeneratorApp(tp.AppTool):
                                 command=partial(self.generate, self.location_generator), takefocus=0)
         location.grid(row=0, column=0, sticky="nsew")
 
-        settlement = tkm.Button(generators, text="Settlement",
-                                command=partial(self.generate, self.settlement_generator), takefocus=0)
-        settlement.grid(row=0, column=1, sticky="nsew")
+        thing = tkm.Button(generators, text="Thing",
+                                command=partial(self.generate, self.thing_generator), takefocus=0)
+        thing.grid(row=0, column=1, sticky="nsew")
 
         monster = tkm.Button(generators, text="Monster",
                                 command=partial(self.generate, self.monster_generator), takefocus=0)
@@ -61,3 +62,7 @@ class GeneratorApp(tp.AppTool):
         character = tkm.Button(generators, text="Character",
                                 command=partial(self.generate, self.character_generator), takefocus=0)
         character.grid(row=1, column=1, sticky="nsew")
+        
+        settlement = tkm.Button(generators, text="Settlement",
+                                command=partial(self.generate, self.settlement_generator), takefocus=0)
+        settlement.grid(row=2, column=0, sticky="nsew")

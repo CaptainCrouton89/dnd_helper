@@ -30,7 +30,8 @@ APP_BINDINGS = {
 class App():
 
     def __init__(self, config=None):
-        self.root = tk.Tk("D&D Helper")
+        self.root = tk.Tk()
+        self.root.title('D&D Helper')
         self.root.id = "root"
         self.root.app = self
         self.state = False
@@ -56,12 +57,12 @@ class App():
 
     def initialize_dir(self, dir):
         os.makedirs(os.path.join(dir, "sessions"), exist_ok=True)
-        os.makedirs(os.path.join(dir, "locations"), exist_ok=True)
+        os.makedirs(os.path.join(dir, "entities"), exist_ok=True)
         os.makedirs(os.path.join(dir, "encounters"), exist_ok=True)
 
     def load_campaign(self, config):
         if not config:
-            self.campaign_dir = askdirectory(title="Open Campaign", initialdir="~/campaigns")
+            self.campaign_dir = askdirectory(title="Open Campaign", initialdir=os.path.expanduser("~/campaigns"))
             self.initialize_dir(self.campaign_dir)
 
             sessions = os.listdir(os.path.join(self.campaign_dir, "sessions"))
@@ -82,8 +83,6 @@ class App():
                     config = json.load(f)
         
         self.config = config
-        if messagebox.askyesno(0, "Open new session?"):
-            self.config["campaign_data"]["session_num"] += 1
         self.config["campaign_data"]["campaign_name"] = self.campaign_dir
         self.config["session_data"]["workspace"]["campaign_settings"]["directory"] = self.campaign_dir
         self.load_session()
@@ -95,6 +94,9 @@ class App():
     def save_session(self, event=None):
         print("saving session")
         self.config["session_data"] = self.get_session_config()
+
+        if messagebox.askyesno(0, "Save as new session?"):
+            self.config["campaign_data"]["session_num"] += 1
 
         session_num = self.config["campaign_data"]["session_num"]
         save_path = os.path.join(self.campaign_dir, "sessions", f"session_{session_num}.json")

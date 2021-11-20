@@ -68,7 +68,7 @@ class DiceApp(tp.AppTool):
         self.rowconfigure(1, weight=4)
 
         # Header
-        header = tk.Frame(self)
+        header = tp.TemplateFrame(self)
         # header.grid(row=0, column=0, sticky="nsew")
         header.pack(side=tk.TOP)
 
@@ -76,7 +76,7 @@ class DiceApp(tp.AppTool):
         self.dice_results.pack(side=tk.TOP)
 
         # Dice Results
-        results = tk.Frame(self)
+        results = tp.TemplateFrame(self)
         # results.grid(row=1, column=0, sticky="nsew")
         results.pack(side=tk.TOP)
 

@@ -24,6 +24,7 @@ class MusicApp(tp.AppTool):
             ambiencePlaylists = json.load(f)
 
         self.music_player = mp.MusicPlayer(moodPlaylists, ambiencePlaylists)
+        print("Music player configured")
 
         self.current_track = tk.StringVar()
         self.current_track.set("<no song>")

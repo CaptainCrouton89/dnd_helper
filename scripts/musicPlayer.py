@@ -39,7 +39,8 @@ class MusicPlayer():
             os.system(f"open {SPOTIFY_PATH}")
             print("Opening spotify, please wait...") 
 
-        self.connect()
+        if not self.connect():
+            exit(1)
 
         # self.sp.shuffle(True, self.device)
 
@@ -61,17 +62,18 @@ class MusicPlayer():
         print("Connected")
         self.user = self.sp.current_user()
         
-        while True:
+        try:
+            print(self.sp.devices())
+            self.device = self.sp.devices()["devices"][0]["id"]
+            print("Hiding spotify")
             try:
-                self.device = self.sp.devices()["devices"][0]["id"]
-                print("Hiding spotify")
-                try:
-                    os.system("osascript -e \'tell application \"Finder\"\' -e \'set visible of process \"Spotify\" to false\' -e \'end tell\'")
-                except:
-                    pass
-                break
+                os.system("osascript -e \'tell application \"Finder\"\' -e \'set visible of process \"Spotify\" to false\' -e \'end tell\'")
             except:
                 pass
+            return True
+        except:
+            print("Could not find device.")
+            return False
         print("Found device")
     
     def _play(self, id, uri_type):
@@ -92,6 +94,7 @@ class MusicPlayer():
             self.connect()
             success = self._play(id, uri_type)
         if not success:
+            os.system(f"open {SPOTIFY_PATH}")
             print("Reopen spotify, play something from a different playlist.")
             exit()
 

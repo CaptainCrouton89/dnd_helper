@@ -1,7 +1,10 @@
+import os
+import json
 from functools import partial
 import tkinter as tk
 import tkmacosx as tkm
 import tkinterTools.templates as tp
+from tkinter.filedialog import askopenfiles
 
 class WorldNotesApp(tp.AppTool):
 
@@ -46,7 +49,7 @@ class SessionNotes(tp.BasicFrame):
         return {"notes": text}
 
 
-class EntityCollection(tk.Frame):
+class EntityCollection(tp.TemplateFrame):
 
     def __init__(self, master, config):
         super().__init__(master)
@@ -55,6 +58,13 @@ class EntityCollection(tk.Frame):
         self.entities = []
         self.columnconfigure(0, weight=1)
         self.add_widgets(config)
+
+    def load(self):
+        files = askopenfiles(title="Open Entities", initialdir=os.path.join(self.get_dir(), "entities"))
+        for file in files:
+            file = file.read()
+            entity_config = json.loads(file)
+            self.new_entity(entity_config)
 
     def add_widgets(self, config):
         # self.columnconfigure(0, weight=1)
@@ -67,6 +77,10 @@ class EntityCollection(tk.Frame):
         new_entity = tkm.Button(header, text="New",
                                 command=partial(self.new_entity, None), takefocus=0)
         new_entity.pack(side=tk.RIGHT)
+
+        load_entity = tkm.Button(header, text="Load",
+                                command=self.load, takefocus=0)
+        load_entity.pack(side=tk.RIGHT)
 
         self.body = tp.VerticalScrolledFrame(self)
         self.body.grid(column=0, row=1, sticky="nsew")
@@ -98,6 +112,12 @@ class WorldEntityEntry(tp.BasicFrame):
         notes = self.notes.get("1.0",'end-1c')
         return {"title": title, "notes": notes}
 
+    def save(self):
+        config = self.get_config()
+        save_path = os.path.join(self.get_dir(), "entities", config["title"]+".json")
+        with open(save_path, "w") as f:
+            json.dump(config, f)
+
     def add_widgets(self, config):
         header = tp.BasicFrame(self)
         header.pack(side=tk.TOP, expand=True, fill="x")
@@ -107,11 +127,12 @@ class WorldEntityEntry(tp.BasicFrame):
         if config:
             self.title.insert(tk.INSERT, config["title"])
 
-        save = tkm.Button(header, text="X",
+        delete = tkm.Button(header, text="X",
                                 command=self.destroy, takefocus=0)
-        save.pack(side=tk.RIGHT)
+        delete.pack(side=tk.RIGHT)
+
         save = tkm.Button(header, text="Save",
-                                command=partial(print, "saving!"), takefocus=0)
+                                command=self.save, takefocus=0)
         save.pack(side=tk.RIGHT)
 
         self.notes = tk.Text(self, height=4, wrap="word", takefocus=1, font=("Callibri", 14), bg="white", fg="black")

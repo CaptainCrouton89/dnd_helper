@@ -8,6 +8,38 @@ import tkinterTools.templates as tp
 import tkinterTools.constants as c
 from tkinter.filedialog import askdirectory, askopenfile, asksaveasfile
 
+KEYBIND_TEXT = \
+            "\n\n\
+            Command -> Control on Windows machines \n\n\
+            ********* FILE COMMANDS *******************************     \n\n\
+            save encounter          : <Command-s>                       \n\
+            load encounter          : <Command-o>                       \n\
+            \n\n\
+            ********* SHELF COMMANDS ******************************     \n\n\
+            next shelf              : <Tab>                             \n\
+            new shelf               : <Alt-n>                           \n\
+            duplicate shelf:        : <Command-v>                       \n\
+            delete selected shelf   : <Command-BackSpace>               \n\
+            delete all shelves      : <Command-Shift-BackSpace>         \n\
+            \n\n\
+            ********* GAMEPLAY ************************************     \n\n\
+            next turn               : <Command-t>                       \n\
+            choose might stance     : <m>                               \n\
+            choose agility stance   : <a>                               \n\
+            choose cunning stance   : <c>                               \n\
+            choose defense stance   : <d>                               \n\
+            apply weakened          : <Shift-m>                         \n\
+            apply off-balanced      : <Shift-a>                         \n\
+            apply dazed             : <Shift-c>                         \n\
+            apply misc debuff       : <Shift-d>                         \n\
+            \n\n\
+            ********* MOB BUILDING ********************************     \n\n\
+            decrease by 1           : <M1>                              \n\
+            increase by 1           : <Shift-M1>                        \n\
+            increase by 5           : <Command-M1>                      \n\
+            decrease by 1           : <Command-Shift-M1>                \n\
+            "
+
 default_mob = {
             "name": "",
             "vigor": 8,
@@ -73,17 +105,22 @@ class TrackerApp(tp.AppTool):
 
         self.header.columnconfigure([0, 1, 2, 3, 4, 5, 6, 7], weight=1)
 
+        self.title = tk.Entry(self.header)
+        self.title.grid(row=0, column=0, sticky="e")
+        if config:
+            self.title.insert(tk.INSERT, config["title"])
+
         self.turn_counter = UpDownButton(self.header, prefix="TURN: ", inverted=True)
         self.turn_counter.grid(row=0, column=6, sticky="e")
 
         open = tkm.Button(self.header, text="Open", command=self.load_encounter, takefocus=0)
-        open.grid(row=0, column=0, sticky="w")
+        open.grid(row=0, column=1, sticky="w")
 
         save = tkm.Button(self.header, text="Save", command=self.save_encounter, takefocus=0)
-        save.grid(row=0, column=1, sticky="w")
+        save.grid(row=0, column=2, sticky="w")
 
         keybinds = tkm.Button(self.header, text="Keybinds", command=self.open_keybinds, takefocus=0)
-        keybinds.grid(row=0, column=2, sticky="w")
+        keybinds.grid(row=0, column=3, sticky="w")
 
         self.content = tk.Frame(master=self)
         self.content.grid(row=1, column=0, sticky="ew")
@@ -92,36 +129,7 @@ class TrackerApp(tp.AppTool):
         keybind_win = tk.Toplevel(self)
         keybind_win.title("Keybinds")
         text = tk.Label(keybind_win, anchor='w', justify=tk.LEFT, text=
-            "\n\n\
-            Command -> Control on Windows machines \n\n\
-            ********* FILE COMMANDS *******************************     \n\n\
-            save encounter          : <Command-s>                       \n\
-            load encounter          : <Command-o>                       \n\
-            \n\n\
-            ********* SHELF COMMANDS ******************************     \n\n\
-            next shelf              : <Tab>                             \n\
-            new shelf               : <Alt-n>                           \n\
-            duplicate shelf:        : <Command-v>                       \n\
-            delete selected shelf   : <Command-BackSpace>               \n\
-            delete all shelves      : <Command-Shift-BackSpace>         \n\
-            \n\n\
-            ********* GAMEPLAY ************************************     \n\n\
-            next turn               : <Command-t>                       \n\
-            choose might stance     : <m>                               \n\
-            choose agility stance   : <a>                               \n\
-            choose cunning stance   : <c>                               \n\
-            choose defense stance   : <d>                               \n\
-            apply weakened          : <Shift-m>                       \n\
-            apply off-balanced      : <Shift-a>                       \n\
-            apply dazed             : <Shift-c>                       \n\
-            apply misc debuff       : <Shift-d>                       \n\
-            \n\n\
-            ********* MOB BUILDING ********************************     \n\n\
-            decrease by 1           : <M1>                              \n\
-            increase by 1           : <Shift-M1>                        \n\
-            increase by 5           : <Command-M1>                      \n\
-            decrease by 1           : <Command-Shift-M1>                \n\
-            "
+            KEYBIND_TEXT
         )
         text.configure(font=("Menlo", 14))
         text.pack(side=tk.LEFT, fill="both")
@@ -173,18 +181,19 @@ class TrackerApp(tp.AppTool):
 
     def load_encounter(self, event=None):
         self.delete_all()
-        in_file = askopenfile(title="Open Encounter", initialdir=".", filetypes=[("JSON", "*.json")])
+        in_file = askopenfile(title="Open Encounter", initialdir=os.path.join(self.get_dir(), "encounters"), filetypes=[("JSON", "*.json")])
         all_mobs = json.load(in_file)
         for mob_config in all_mobs:
             self.add_shelf(mob_config)
 
     def save_encounter(self, event=None):
-        out_file = asksaveasfile(title="Save Encounter", defaultextension=".json")
+        save_path = os.path.join(self.get_dir(), "encounters", self.title.get() + ".json")
+        # out_file = asksaveasfile(title="Save Encounter", initialdir=save_path, defaultextension=".json")
         all_mobs = []
         for shelf in self.shelves:
             config = shelf.get_config()
             all_mobs.append(config)
-        json.dump(all_mobs, out_file)
+        json.dump(all_mobs, open(save_path, "w"))
 
     def delete_all(self, event=None):
         self.turn_counter.val = 0

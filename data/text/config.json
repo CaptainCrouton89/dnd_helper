@@ -23,5 +23,10 @@
         "target": "name",
         "path": "names",
         "format": "<namesMale>, <namesMale>, <namesMale>\n\n<namesFemale>, <namesFemale>, <namesFemale>"
+    },
+    "things": {
+        "target": "thing",
+        "path": "things",
+        "format": "<nounA> <adjectiveB>\n<adjectiveA> <nounB>\n<nounA> <adjectiveB>\n<adjectiveA> <nounB>"
     }
 }

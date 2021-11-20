@@ -15,6 +15,15 @@ class TemplateFrame(tk.Frame):
         else:
             return self.master.get_id(id)
 
+    def get_root_config(self):
+        return self.get_id("root").app.config
+
+    def get_dir(self):
+        return self.get_root_config()["session_data"]["workspace"]["campaign_settings"]["directory"]
+
+    def add_widgets(self, config):
+        pass
+
 
 class TemplateNotebook(ttk.Notebook):
 
@@ -48,6 +57,19 @@ class AppTool(TemplateFrame):
         return {}
 
 
+class Canvas(tk.Canvas):
+
+    def __init__(self, root, *args, **kwargs):
+        super().__init__(root, *args, **kwargs)
+        self.id = "canvas"
+
+    def get_id(self, id):
+        if self.master.id == id:
+            return self.master
+        else:
+            return self.master.get_id(id)
+
+
 class VerticalScrolledFrame(tk.Frame):
     """A pure Tkinter scrollable frame that actually works!
     * Use the 'interior' attribute to place widgets inside the scrollable frame
@@ -56,12 +78,13 @@ class VerticalScrolledFrame(tk.Frame):
 
     """
     def __init__(self, parent, *args, **kw):
-        tk.Frame.__init__(self, parent, *args, **kw)            
+        tk.Frame.__init__(self, parent, *args, **kw)
+        self.id = "SrollFrame"   
 
         # create a canvas object and a vertical scrollbar for scrolling it
         self.vscrollbar = ttk.Scrollbar(self, orient=tk.VERTICAL)
         self.vscrollbar.pack(fill=tk.Y, side=tk.RIGHT, expand=tk.FALSE)
-        self.canvas = tk.Canvas(self, bd=0, highlightthickness=0,
+        self.canvas = Canvas(self, bd=0, highlightthickness=0,
                         yscrollcommand=self.vscrollbar.set)
         self.canvas.pack(side=tk.LEFT, fill=tk.BOTH, expand=tk.TRUE)
         self.vscrollbar.config(command=self.canvas.yview)
@@ -71,7 +94,7 @@ class VerticalScrolledFrame(tk.Frame):
         self.canvas.yview_moveto(0)
 
         # create a frame inside the canvas which will be scrolled with it
-        self.interior = tk.Frame(self.canvas, borderwidth=2, relief=tk.RAISED)
+        self.interior = TemplateFrame(self.canvas, borderwidth=2, relief=tk.RAISED)
         self.interior_id = self.canvas.create_window(0, 0, window=self.interior,
                                            anchor=tk.NW)
 
@@ -80,6 +103,11 @@ class VerticalScrolledFrame(tk.Frame):
         self.canvas.bind('<Configure>', self._configure_canvas)
         self.canvas.bind_all("<MouseWheel>", self._on_mousewheel)
 
+    def get_id(self, id):
+        if self.master.id == id:
+            return self.master
+        else:
+            return self.master.get_id(id)
 
     # track changes to the canvas and frame width and sync them,
     # also updating the scr
