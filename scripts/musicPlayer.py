@@ -1,4 +1,7 @@
+import logging
 import json
+import os
+import subprocess
 import spotipy
 from spotipy.oauth2 import SpotifyClientCredentials
 
@@ -14,24 +17,31 @@ Goals
 PLAYLIST = "playlist"
 TRACK = "track"
 
+SPOTIFY_PATH = "/Applications/Spotify.app"
+
+def is_runnning(app):
+    count = int(subprocess.check_output(["osascript",
+                "-e", "tell application \"System Events\"",
+                "-e", "count (every process whose name is \"" + app + "\")",
+                "-e", "end tell"]).strip())
+    return count > 0
+
 
 class MusicPlayer():
 
     def __init__(self, moodPlaylists, ambiencePlaylists):
         self.moodPlaylists = moodPlaylists
-        self.ambiencePlaylists = ambiencePlaylists
-        
-        with open("spotifykey.json") as f:
-            key = json.load(f)
-        oauth_object = spotipy.SpotifyOAuth(key["CID"], key["SECRET"], key["REDIRECT_URI"], scope=key["SCOPE"])
-        token = oauth_object.get_access_token(as_dict=False)
+        self.ambiencePlaylists = ambiencePlaylists   
 
-        self.sp = spotipy.Spotify(auth=token)
-        self.user = self.sp.current_user()
-        
-        self.device = self.sp.devices()["devices"][0]["id"]
+        logging.info("Initializing music player")
 
-        self.sp.shuffle(True, self.device)
+        if not is_runnning("Spotify"):
+            os.system(f"open {SPOTIFY_PATH}")
+            print("Opening spotify, please wait...") 
+
+        self.connect()
+
+        # self.sp.shuffle(True, self.device)
 
         self.theme = "terror"
         self.intensity = 0
@@ -41,19 +51,55 @@ class MusicPlayer():
         self.playing = False
         self.repeating = False
         
+    def connect(self):
+        print("Connecting to Spotify")
+        with open("spotifykey.json") as f:
+            key = json.load(f)
+        oauth_object = spotipy.SpotifyOAuth(key["CID"], key["SECRET"], key["REDIRECT_URI"], scope=key["SCOPE"])
+        token = oauth_object.get_access_token(as_dict=False)
+        self.sp = spotipy.Spotify(auth=token)
+        print("Connected")
+        self.user = self.sp.current_user()
+        
+        while True:
+            try:
+                self.device = self.sp.devices()["devices"][0]["id"]
+                print("Hiding spotify")
+                try:
+                    os.system("osascript -e \'tell application \"Finder\"\' -e \'set visible of process \"Spotify\" to false\' -e \'end tell\'")
+                except:
+                    pass
+                break
+            except:
+                pass
+        print("Found device")
+    
     def _play(self, id, uri_type):
-        if uri_type == "playlist":
-            uri = f"spotify:{uri_type}:{id}"
-            self.sp.start_playback(context_uri=uri)
-        elif uri_type == "track":
-            uris = f"spotify:{uri_type}:{id}"
-            self.sp.start_playback(uris=[uris])
+        try:
+            if uri_type == "playlist":
+                uri = f"spotify:{uri_type}:{id}"
+                self.sp.start_playback(context_uri=uri)
+            elif uri_type == "track":
+                uris = f"spotify:{uri_type}:{id}"
+                self.sp.start_playback(uris=[uris])
+            return True
+        except:
+            return False
+    
+    def play(self, id, uri_type):
+        success = self._play(id, uri_type)
+        if not success:
+            self.connect()
+            success = self._play(id, uri_type)
+        if not success:
+            print("Reopen spotify, play something from a different playlist.")
+            exit()
 
     def refresh(self, refresh_type):
         if refresh_type == "theme":
-            self._play(self.moodPlaylists[self.theme][self.intensity][1], uri_type="playlist")
+            self.play(self.moodPlaylists[self.theme][self.intensity][1], uri_type="playlist")
         elif refresh_type == "ambience":
-            self._play(self.ambience_track, uri_type="track")
+            self.play(self.ambience_track, uri_type="track")
        
     def pause_resume(self):
         if self.playing:
@@ -70,6 +116,9 @@ class MusicPlayer():
     def skip(self):
         self.sp.next_track()
 
+    def middle(self):
+        self.sp.seek_track(40000)
+
     def repeat(self, force_on=False):            
         if not self.repeating or force_on:
             self.repeating = True
@@ -85,7 +134,6 @@ class MusicPlayer():
     def set_theme(self, theme):
         self.theme = theme
         self.intensity = 0
-        print(f"THEME SET to {theme}")
         self.refresh("theme")
 
     def change_intensity(self, delta):

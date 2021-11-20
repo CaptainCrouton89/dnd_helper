@@ -1,4 +1,5 @@
 import os
+import sys
 import time
 import webbrowser
 import spotipy
@@ -13,7 +14,8 @@ from scripts.randGenerator import SettingGenerator
 from scripts.musicPlayer import MusicPlayer
 import tkinter as tk
 from tkinter import ttk 
-from tkinter.filedialog import askopenfile, asksaveasfile
+from tkinter import messagebox
+from tkinter.filedialog import askdirectory, askopenfile, asksaveasfile
 
 DATA_PATH = "data"
 TEXT_PATH = "text"
@@ -41,40 +43,119 @@ vigor_scalar = [
 ]
 
 
-class AppTool(tk.Frame):
+def get_text(entry, output):
+    output = entry.get()
+
+class TemplateFrame(tk.Frame):
+
+    def __init__(self, root, *args, **kwargs):
+        super().__init__(root, *args, **kwargs)
+        # self.columnconfigure(tuple(range(0, 100)), weight=0)
+        # self.rowconfigure(tuple(range(0, 100)), weight=0)
+        self.id = "template_frame"
+
+    def get_id(self, id):
+        if self.master.id == id:
+            return self.master
+        else:
+            return self.master.get_id(id)
+
+
+class TemplateNotebook(ttk.Notebook):
+
+    def __init__(self, root, *args, **kwargs):
+        super().__init__(root, *args, **kwargs)
+        self.id = "template_notebook"
+
+    def get_id(self, id):
+        if self.master.id == id:
+            return self.master
+        else:
+            return self.master.get_id(id)
+
+
+class BasicFrame(TemplateFrame):
+
+    def __init__(self, root, *args, **kwargs):
+        super().__init__(root, borderwidth=2, relief=tk.RAISED, *args, **kwargs)
+        self.id = "basic_frame"
+
+
+class AppTool(TemplateFrame):
     
     def __init__(self, root, name, takefocus=1):
         super().__init__(root, borderwidth=2, relief=tk.RAISED, 
                             takefocus=takefocus, highlightthickness=3, highlightcolor="OrangeRed4", highlightbackground="gray80")
         self.app_name = name
+        self.id = "app"
+
+    def get_config(self):
+        return {}
 
 
-class BasicFrame(tk.Frame):
+class VerticalScrolledFrame(tk.Frame):
+    """A pure Tkinter scrollable frame that actually works!
+    * Use the 'interior' attribute to place widgets inside the scrollable frame
+    * Construct and pack/place/grid normally
+    * This frame only allows vertical scrolling
 
-    def __init__(self, root):
-        super().__init__(root, borderwidth=2, relief=tk.RAISED)
+    """
+    def __init__(self, parent, *args, **kw):
+        tk.Frame.__init__(self, parent, *args, **kw)            
+
+        # create a canvas object and a vertical scrollbar for scrolling it
+        self.vscrollbar = ttk.Scrollbar(self, orient=tk.VERTICAL)
+        self.vscrollbar.pack(fill=tk.Y, side=tk.RIGHT, expand=tk.FALSE)
+        self.canvas = tk.Canvas(self, bd=0, highlightthickness=0,
+                        yscrollcommand=self.vscrollbar.set)
+        self.canvas.pack(side=tk.LEFT, fill=tk.BOTH, expand=tk.TRUE)
+        self.vscrollbar.config(command=self.canvas.yview)
+        
+        # reset the view
+        self.canvas.xview_moveto(0)
+        self.canvas.yview_moveto(0)
+
+        # create a frame inside the canvas which will be scrolled with it
+        self.interior = tk.Frame(self.canvas, borderwidth=2, relief=tk.RAISED)
+        self.interior_id = self.canvas.create_window(0, 0, window=self.interior,
+                                           anchor=tk.NW)
+
+        self.frame_height_ratio = .7
+        self.interior.bind('<Configure>', self._configure_interior)
+        self.canvas.bind('<Configure>', self._configure_canvas)
+        self.canvas.bind_all("<MouseWheel>", self._on_mousewheel)
 
 
-class ScrollableFrame(ttk.Frame):
-    def __init__(self, container, *args, **kwargs):
-        super().__init__(container, *args, **kwargs)
-        canvas = tk.Canvas(self)
-        scrollbar = ttk.Scrollbar(self, orient="vertical", command=canvas.yview)
-        self.scrollable_frame = ttk.Frame(canvas)
+    # track changes to the canvas and frame width and sync them,
+    # also updating the scr
+    def _configure_interior(self, event):
+        # update the scrollbars to match the size of the inner frame
+        size = (self.interior.winfo_reqwidth(), self.interior.winfo_reqheight())
+        self.canvas.config(scrollregion="0 0 %s %s" % size)
+        if self.interior.winfo_reqwidth() != self.canvas.winfo_width():
+            # update the canvas's width to fit the inner frame
+            self.canvas.config(width=self.interior.winfo_reqwidth())
+        if  (self.get_ratio_to_parent() < self.frame_height_ratio):
+            self.canvas.config(height=self.interior.winfo_reqheight())
+        
 
-        self.scrollable_frame.bind(
-            "<Configure>",
-            lambda e: canvas.configure(
-                scrollregion=canvas.bbox("all")
-            )
-        )
-
-        canvas.create_window((0, 0), window=self.scrollable_frame, anchor="nw")
-
-        canvas.configure(yscrollcommand=scrollbar.set)
-
-        canvas.pack(side="left", fill="both", expand=True)
-        scrollbar.pack(side="right", fill="y")
+    def _configure_canvas(self, event):
+        if self.interior.winfo_reqwidth() != self.canvas.winfo_width():
+            # update the inner frame's width to fill the canvas
+            self.canvas.itemconfigure(self.interior_id, width=self.canvas.winfo_width())
+            # canvas.itemconfigure(interior_id, height=canvas.winfo_height())
+        
+    def _on_mousewheel(self, event):
+        self.canvas.yview_scroll(-event.delta, "units")
+        
+    def get_ratio_to_parent(self):
+        # Parent is entity collection
+        central_content = self.master.master.master.master
+        workspace, worldnotes = central_content.winfo_children()
+        # print("workspace size:", workspace.winfo_height())
+        # print("worldnotes size:", worldnotes.winfo_height())
+        ratio = worldnotes.winfo_height() / workspace.winfo_height()
+        return ratio
 
 
 APP_BINDINGS = {
@@ -82,25 +163,85 @@ APP_BINDINGS = {
     "d": "dice",
     "p": "music",
     "g": "generator",
-    "s": "session_notes",
+    "n": "session_notes",
     "e": "world_notes",
 }
 
 
 class App():
 
-    def __init__(self):
-        self.root = tk.Tk()
-        self.root.title = "D&D Helper"
+    def __init__(self, config=None):
+        self.root = tk.Tk("D&D Helper")
+        self.root.id = "root"
+        self.root.app = self
         self.state = False
 
         self.root.bind("<Control-f>", self.toggle_fullscreen)
         self.root.bind("<Escape>", self.end_fullscreen)
+        self.root.bind("<Command-s>", self.save_session)
 
         for binding, _ in APP_BINDINGS.items():
             self.root.bind(f"<Command-{binding}>", self.focus_on_app)
 
-        self.add_widgets()
+        self.load_campaign(config)
+        
+
+    def get_session_config(self) -> dict:
+        return {
+            "music": self.music.get_config(),
+            "dice": self.dice.get_config(),
+            "generator": self.generator.get_config(),
+            "workspace": self.workspace.get_config(),
+            "worldnotes": self.world_notes.get_config()
+        }
+
+    def initialize_dir(self, dir):
+        os.makedirs(os.path.join(dir, "sessions"), exist_ok=True)
+        os.makedirs(os.path.join(dir, "locations"), exist_ok=True)
+        os.makedirs(os.path.join(dir, "encounters"), exist_ok=True)
+
+    def load_campaign(self, config):
+        if not config:
+            self.campaign_dir = askdirectory(title="Open Campaign", initialdir="~/campaigns")
+            self.initialize_dir(self.campaign_dir)
+
+            sessions = os.listdir(os.path.join(self.campaign_dir, "sessions"))
+            sessions = [session for session in sessions if ".DS_Store" not in session]
+            max_session = [None, 0]
+            for session in sessions:
+                print(session)
+                num = int(session.replace("session_", "").replace(".json", ""))
+                if num > max_session[1]:
+                    max_session[0] = session
+                    max_session[1] = num
+
+            if max_session[0] == None:
+                with open(os.path.expanduser("~/campaigns/.new_campaign_config.json")) as f:
+                    config = json.load(f)
+            else:
+                with open(os.path.join(self.campaign_dir, "sessions", max_session[0])) as f:
+                    config = json.load(f)
+        
+        self.config = config
+        if messagebox.askyesno(0, "Open new session?"):
+            self.config["campaign_data"]["session_num"] += 1
+        self.config["campaign_data"]["campaign_name"] = self.campaign_dir
+        self.config["session_data"]["workspace"]["campaign_settings"]["directory"] = self.campaign_dir
+        self.load_session()
+
+    def load_session(self):
+        print("Loading app")
+        self.add_widgets(self.config["session_data"])
+
+    def save_session(self, event=None):
+        print("saving session")
+        self.config["session_data"] = self.get_session_config()
+
+        session_num = self.config["campaign_data"]["session_num"]
+        save_path = os.path.join(self.campaign_dir, "sessions", f"session_{session_num}.json")
+        
+        with open(save_path, "w+") as f:
+            json.dump(self.config, f)
 
     def toggle_fullscreen(self, event=None):
         self.state = not self.state  # Just toggling the boolean
@@ -120,52 +261,44 @@ class App():
                 app.focus_set()
         
 
-    def add_widgets(self):
+    def add_widgets(self, config):
         # Set up overall grid
         self.root.columnconfigure(0, weight=0)
-        self.root.columnconfigure(1, weight=0)
+        self.root.columnconfigure(1, weight=1)
 
         self.root.rowconfigure(0, weight=4)
         self.root.rowconfigure(1, weight=4)
 
         # Set up left_bar
-        left_bar = tk.Frame(self.root)
+        left_bar = TemplateFrame(self.root)
         left_bar.grid(row=0, column=0, rowspan=2, sticky="nsew")
         # left_bar.pack(side=tk.LEFT, expand=True, fill="both")
 
         left_bar.rowconfigure((0, 1), weight=0)
         left_bar.rowconfigure(2, weight=4)
 
-        self.music = MusicApp(left_bar)
+        self.music = MusicApp(left_bar, config["music"])
         self.music.grid(row=0, column=0, sticky="nsew")
 
-        self.dice = DiceApp(left_bar)
+        self.dice = DiceApp(left_bar, config["dice"])
         self.dice.grid(row=1, column=0, sticky="nsew")
 
-        self.generator = GeneratorApp(left_bar)       
+        self.generator = GeneratorApp(left_bar, config["generator"])       
         self.generator.grid(row=2, column=0, sticky="nsew")
 
         # Set up central_content
-        central_content = tk.Frame(self.root)
+        central_content = TemplateFrame(self.root)
         central_content.grid(row=0, column=1, rowspan=2, sticky="nsew")
         # central_content.pack(side=tk.LEFT, expand=True, fill="both")
 
-        central_content.rowconfigure(0, weight=1)
-        central_content.rowconfigure(1, weight=1)
+        central_content.rowconfigure(0, weight=0)
+        central_content.rowconfigure(1, weight=0)
+        central_content.columnconfigure(0, weight=1)
 
-        # central_content_tabs = ttk.Notebook(central_content)
-        # # central_content_tabs.grid(row=0, column=0, sticky="nsew")
-
-        # self.tracker = TrackerApp(central_content_tabs)
-        # central_content_tabs.add(self.tracker, text ='Combat')
-        
-        # self.session_notes = SessionNotesApp(central_content_tabs)
-        # central_content_tabs.add(self.session_notes, text ='Notes')
-
-        self.workspace = WorkspaceApp(central_content)
+        self.workspace = WorkspaceApp(central_content, config["workspace"])
         self.workspace.grid(row=0, column=0, sticky="nsew")
 
-        self.world_notes = WorldNotesApp(central_content)
+        self.world_notes = WorldNotesApp(central_content, config["worldnotes"])
         self.world_notes.grid(row=1, column=0, sticky="nsew")
 
         # All apps
@@ -181,11 +314,11 @@ class App():
 
 class DiceApp(AppTool):
 
-    def __init__(self, master):
+    def __init__(self, master, config):
         super().__init__(master, "dice")
         self.root = master
         self.selected = None
-        self.add_widgets()
+        self.add_widgets(config)
 
         self.bind("<Key-4>", self.rollx)
         self.bind("<Key-6>", self.rollx)
@@ -198,6 +331,9 @@ class DiceApp(AppTool):
         self.bind("<R>", self.reset)
 
         self.current_roll = []
+
+    def get_config(self):
+        return {}
 
     def roll(self, num):
         result = random.randint(1, num)
@@ -237,7 +373,7 @@ class DiceApp(AppTool):
         elif k == "parenright":
             self.roll(20)
     
-    def add_widgets(self):
+    def add_widgets(self, config):
         self.rowconfigure(0, weight=2)
         self.rowconfigure(1, weight=4)
 
@@ -272,7 +408,7 @@ class DiceApp(AppTool):
 
 class MusicApp(AppTool):
 
-    def __init__(self, master):
+    def __init__(self, master, config):
         super().__init__(master, "music")
         self.root = master
         self.selected = None
@@ -297,7 +433,7 @@ class MusicApp(AppTool):
         self.amb_track_text = tk.StringVar()
         self.amb_track_text.set("<last ambient>")
 
-        self.add_widgets()
+        self.add_widgets(config)
 
         self.bind("<C>", self.set_bound_theme)
         self.bind("<J>", self.set_bound_theme)
@@ -310,9 +446,13 @@ class MusicApp(AppTool):
         self.bind("<Up>", self.decrease_intensity)
         self.bind("<Down>", self.increase_intensity)
         self.bind("<Right>", self.skip)
+        self.bind("<Command-Right>", self.middle)
         self.bind("<Left>", self.repeat)
         self.bind("<BackSpace>", self.pause_resume)
         # self.bind("<?>", self.get_current_track)
+
+    def get_config(self):
+        return {}
 
     def set_bound_theme(self, event=None):
         k = event.keysym
@@ -365,11 +505,15 @@ class MusicApp(AppTool):
         self.music_player.skip()
         self.update_current()
 
+    def middle(self, event=None):
+        self.music_player.middle()
+
     def pause_resume(self, event=None):
         self.music_player.pause_resume()
 
     def play_last_ambient(self, event=None):
-        self.set_ambient_track(self.last_amb_track_id, self.last_ambient_track)
+        if self.last_amb_track_id:
+            self.set_ambient_track(self.last_amb_track_id, self.last_ambient_track)
 
     def repeat(self, event=None):
         self.music_player.repeat()
@@ -397,7 +541,7 @@ class MusicApp(AppTool):
         self.ambience_category_selector.pack(expand=True, fill="both")
         self.ambience_track_selector.pack_forget()
     
-    def add_widgets(self):
+    def add_widgets(self, config):
         current_info = BasicFrame(self)
         # current_info.grid(row=0, column=0, sticky="nsew")
         current_info.pack(side=tk.TOP, expand=True, fill="both")
@@ -433,7 +577,7 @@ class MusicApp(AppTool):
             button.grid(row=i, column=0, sticky="ew")
             all_ambience.append(button)
 
-        self.current_track_text = tk.Label(current_info, textvariable=self.current_track, font=("Helvetica",14), justify="center")
+        self.current_track_text = tk.Label(current_info, textvariable=self.current_track, font=("Callibri",14), justify="center")
         self.current_track_text.grid(row=0, column=1, sticky="nsew")
         self.next_track_text = tk.Label(current_info, textvariable=self.next_track, fg="gray", justify="center")
         self.next_track_text.grid(row=0, column=0, sticky="nsew")
@@ -446,20 +590,24 @@ class MusicApp(AppTool):
 
 class SessionNotesApp(AppTool):
 
-    def __init__(self, master):
+    def __init__(self, master, config):
         super().__init__(master, "session_notes")
         self.root = master
         self.selected = None
-        self.add_widgets()
+        self.add_widgets(config)
+
+    def get_config(self):
+        return {}
     
-    def add_widgets(self):
+    def add_widgets(self, config):
         self.notes = tk.Text(self, height=4, wrap="word", takefocus=0, bg="white", fg="black")
         self.notes.pack(expand=True, fill="both")
-
+        self.notes.insert(tk.INSERT, config["notes"])
+        
 
 class GeneratorApp(AppTool):
 
-    def __init__(self, master):
+    def __init__(self, master, config):
         super().__init__(master, "generator")
         self.root = master
         self.selected = None
@@ -472,10 +620,13 @@ class GeneratorApp(AppTool):
         self.location_generator = SettingGenerator(config["locations"], text_data_path, default_quantity=3)
         self.settlement_generator = SettingGenerator(config["settlements"], text_data_path)
         self.monster_generator = SettingGenerator(config["monsters"], text_data_path)
-        self.character_generator = SettingGenerator(config["characters"], text_data_path, default_quantity=2)
+        self.character_generator = SettingGenerator(config["characters"], text_data_path, default_quantity=1)
         # self.name_generator = SettingGenerator(config["names"], text_data_path, default_quantity=2)
 
-        self.add_widgets()
+        self.add_widgets(config)
+
+    def get_config(self):
+        return {}
 
     def generate(self, generator):
         self.focus_set()
@@ -484,8 +635,8 @@ class GeneratorApp(AppTool):
         self.generated_text.delete("1.0","end")
         self.generated_text.insert(tk.INSERT, text)
     
-    def add_widgets(self):
-        self.generated_text = tk.Text(self, height=15, width=30, wrap="word", takefocus=0, bg="white", fg="black")
+    def add_widgets(self, config):
+        self.generated_text = tk.Text(self, height=15, width=30, wrap="word", font=("Callibri", 14), takefocus=0, bg="white", fg="black")
         self.generated_text.pack(side=tk.TOP, expand=True, fill="both")
 
         generators = BasicFrame(self)
@@ -510,74 +661,185 @@ class GeneratorApp(AppTool):
         character.grid(row=1, column=1, sticky="nsew")
 
 
+class CampaignSettings(AppTool):
+
+    def __init__(self, master, config):
+        super().__init__(master, "campaign_settings")
+        self.root = master
+        self.selected = None
+        self.add_widgets(config)
+
+    def load_session(self, session_path):
+        with open(os.path.join(self.config["directory"], "sessions", session_path)) as f:
+            config = json.load(f)
+        
+        self.get_id("root").app.load_campaign(config)
+
+    def get_config(self):
+        return self.config
+
+    def add_widgets(self, config):
+        self.config = config
+
+        session_selector = BasicFrame(self)
+        session_selector.columnconfigure(0, weight=1)
+        session_selector.rowconfigure(0, weight=1)
+        session_selector.grid(row=0, column=0, sticky="new")
+
+        l_sess_selector = tk.Label(session_selector, text="Select session to load")
+        l_sess_selector.pack(side=tk.LEFT, fill="both")
+
+        sessions = os.listdir(os.path.join(config["directory"], "sessions"))
+        sessions = [session for session in sessions if ".DS_Store" not in session]
+        for session in sessions:
+            b_session = ttk.Button(session_selector, text=session.replace(".json", ""), command=partial(self.load_session, session))
+            b_session.pack(side=tk.LEFT, fill="both")
+
+
 class WorkspaceApp(AppTool):
 
-    def __init__(self, master):
+    def __init__(self, master, config):
         super().__init__(master, "world_notes")
         self.root = master
         self.selected = None
-        self.add_widgets()
+        self.add_widgets(config)
 
-    def add_widgets(self):
-        contents = ttk.Notebook(self)
+    def get_config(self):
+        tracker_config = self.tracker.get_config()
+        session_notes_config = self.session_notes.get_config()
+        campaign_settings_config = self.campaign_settings.get_config()
+        return {"tracker": tracker_config, "session_notes": session_notes_config, "campaign_settings": campaign_settings_config}
+
+    def add_widgets(self, config):
+        contents = TemplateNotebook(self)
         contents.pack(expand=True, fill="both")
 
-        tracker = TrackerApp(contents)
-        contents.add(tracker, text ='Tracker')
+        self.tracker = TrackerApp(contents, config["tracker"])
+        contents.add(self.tracker, text ='Tracker')
 
-        session_notes = EntityCollection(contents)
-        contents.add(session_notes, text ='Session Notes')
+        self.session_notes = SessionNotes(contents, config["session_notes"])
+        contents.add(self.session_notes, text ='Session Notes')
+
+        self.campaign_settings = CampaignSettings(contents, config["campaign_settings"])
+        contents.add(self.campaign_settings, text ='Campaign Setting')
 
 
 class WorldNotesApp(AppTool):
 
-    def __init__(self, master):
+    def __init__(self, master, config):
         super().__init__(master, "world_notes")
         self.root = master
         self.selected = None
-        self.add_widgets()
+        self.add_widgets(config)
 
-    def add_widgets(self):
-        contents = ttk.Notebook(self)
+    def get_config(self):
+        locations_config = self.locations.get_config()
+        entities_config = self.entities.get_config()
+        return {"locations": locations_config, "entities": entities_config}
+
+    def add_widgets(self, config):
+        contents = TemplateNotebook(self)
         contents.pack(expand=True, fill="both")
 
-        locations = EntityCollection(contents)
-        contents.add(locations, text ='Locations')
+        self.locations = EntityCollection(contents, config["locations"])
+        contents.add(self.locations, text ='Locations')
 
-        entities = EntityCollection(contents)
-        contents.add(entities, text ='Entities')
+        self.entities = EntityCollection(contents, config["entities"])
+        contents.add(self.entities, text ='Entities')
 
 
 class EntityCollection(tk.Frame):
 
-    def __init__(self, master):
+    def __init__(self, master, config):
         super().__init__(master)
         self.root = master
         self.selected = None
-        self.add_widgets()
+        self.entities = []
+        self.columnconfigure(0, weight=1)
+        self.add_widgets(config)
 
-    def add_widgets(self):
-        entry = WorldEntityEntry(self)
+    def add_widgets(self, config):
+        # self.columnconfigure(0, weight=1)
+        # self.rowconfigure(0, weight=0)
+        # self.rowconfigure(1, weight=1)
+
+        header = BasicFrame(self)
+        header.grid(column=0, row=0, sticky="nsew")
+
+        new_entity = tkm.Button(header, text="New",
+                                command=partial(self.new_entity, None), takefocus=0)
+        new_entity.pack(side=tk.RIGHT)
+
+        self.body = VerticalScrolledFrame(self)
+        self.body.grid(column=0, row=1, sticky="nsew")
+
+        for entity in config:
+            self.new_entity(entity)
+
+    def get_config(self):
+        all_entity_config = [entry.get_config() for entry in self.entities]
+        return all_entity_config
+
+    def new_entity(self, config):
+        entry = WorldEntityEntry(self.body.interior, config)
         entry.pack(side=tk.TOP, expand=True, fill="x")
+        entry.title.focus_set()
+        self.entities.append(entry)
 
 
 class WorldEntityEntry(BasicFrame):
 
-    def __init__(self, master):
+    def __init__(self, master, config):
         super().__init__(master)
         self.root = master
         self.selected = None
-        self.add_widgets()
+        self.add_widgets(config)
 
-    def add_widgets(self):
-        header = tk.Frame(self)
+    def get_config(self):
+        title = self.title.get()
+        notes = self.notes.get("1.0",'end-1c')
+        return {"title": title, "notes": notes}
+
+    def add_widgets(self, config):
+        header = BasicFrame(self)
         header.pack(side=tk.TOP, expand=True, fill="x")
 
         self.title = tk.Entry(header)
         self.title.pack(side=tk.LEFT)
+        if config:
+            print("config:", config)
+            self.title.insert(tk.INSERT, config["title"])
 
-        self.notes = tk.Text(self, height=4, wrap="word", takefocus=0, bg="white", fg="black")
+        save = tkm.Button(header, text="X",
+                                command=self.destroy, takefocus=0)
+        save.pack(side=tk.RIGHT)
+        save = tkm.Button(header, text="Save",
+                                command=partial(print, "saving!"), takefocus=0)
+        save.pack(side=tk.RIGHT)
+
+        self.notes = tk.Text(self, height=4, wrap="word", takefocus=1, font=("Callibri", 14), bg="white", fg="black")
         self.notes.pack(side=tk.TOP, expand=True, fill="both")
+        if config:
+            self.notes.insert(tk.INSERT, config["notes"])
+
+
+class SessionNotes(BasicFrame):
+
+    def __init__(self, master, config):
+        super().__init__(master)
+        self.root = master
+        self.selected = None
+        self.add_widgets(config)
+
+    def add_widgets(self, config):
+        self.notes = tk.Text(self, height=30, wrap="word", takefocus=0, font=("Callibri", 14), bg="white", fg="black")
+        self.notes.pack(side=tk.TOP, expand=True, fill="x")
+        if config:
+            self.notes.insert(tk.INSERT, config["notes"])
+
+    def get_config(self):
+        text = self.notes.get("1.0",'end-1c')
+        return {"notes": text}
 
 
 class TrackerApp(AppTool):
@@ -586,7 +848,7 @@ class TrackerApp(AppTool):
     # Command-R to roll: Result on right
 
 
-    def __init__(self, master):
+    def __init__(self, master, config):
         super().__init__(master, "tracker")
         
         self.root = master
@@ -612,10 +874,14 @@ class TrackerApp(AppTool):
         self.shelves = []
         self.focus_index = 0
 
-        self.add_widgets()
+        self.add_widgets(config)
         self.new_shelf()
 
-    def add_widgets(self):
+    def add_widgets(self, config):
+        self.columnconfigure(0, weight=1)
+        self.rowconfigure(0, weight=0)
+        self.rowconfigure(1, weight=0)
+
         self.header = tk.Frame(self)
         self.header.grid(row=0, column=0)
 
@@ -634,7 +900,7 @@ class TrackerApp(AppTool):
         keybinds.grid(row=0, column=2, sticky="w")
 
         self.content = tk.Frame(master=self)
-        self.content.grid(row=1, column=0, sticky="w")
+        self.content.grid(row=1, column=0, sticky="ew")
 
     def open_keybinds(self, event=None):
         keybind_win = tk.Toplevel(self)
@@ -753,7 +1019,7 @@ class MobShelf(tk.Frame):
         self.selected = None
         self.core_stats = []
         self.columnconfigure(0, weight=0)
-        self.columnconfigure(1, weight=10)
+        self.columnconfigure(1, weight=1)
         self.columnconfigure(2, weight=0)
         self.columnconfigure(3, weight=0)
 
@@ -782,10 +1048,10 @@ class MobShelf(tk.Frame):
 
         content.grid(column=1, row=0, sticky="nsew")
 
-        content.columnconfigure(0, weight=2)
-        content.columnconfigure(1, weight=2)
-        content.columnconfigure(2, weight=4)
-        content.columnconfigure(3, weight=8)
+        content.columnconfigure(0, weight=0)
+        content.columnconfigure(1, weight=0)
+        content.columnconfigure(2, weight=0)
+        content.columnconfigure(3, weight=1)
         return content
 
     def fill_content(self, content, config):
@@ -874,7 +1140,7 @@ class MobShelf(tk.Frame):
         # Notes
         notes_frame = tk.Frame(master=content, borderwidth=3, relief=tk.GROOVE)
         notes_frame.grid(row=0, column=3, sticky="nsew")
-        self.notes = tk.Text(master=notes_frame, height=4, wrap="word", takefocus=0, bg="white", fg="black")
+        self.notes = tk.Text(master=notes_frame, height=4, width=30, wrap="word", takefocus=0, bg="white", fg="black")
         self.notes.pack(fill="both", expand=True)
         self.notes.pack(fill='both', expand=True)
         self.notes.insert(tk.INSERT, config["notes"])
@@ -1086,8 +1352,15 @@ def to_die(die: int) -> str:
     return "d" + str(die)
 
 
+def load_config(path):
+    with open("config.json") as f:
+        config = json.load(f)
+    return config
+
 def main():
-    app = App()
+    # config = load_config("config.json")   
+    config = None 
+    app = App(config)
     app.root.mainloop()
 
 

@@ -17,7 +17,7 @@
     "characters": {
         "target": "character",
         "path": "npcs",
-        "format": "<traitsCombined>"
+        "format": "<names>, <names>, <names>, <names>\n<names>, <names>, <names>, <names>\n\n<traitsCombined>\n\n<traitsCombined>\n\n<traitsCombined>"
     },
     "names": {
         "target": "name",

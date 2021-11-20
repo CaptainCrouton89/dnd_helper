@@ -44,8 +44,9 @@ class SettingGenerator():
 
             for category in match:
                 category_set = self.all_data[category.strip("<>")]
-                category_instance = random.choice(tuple(category_set))
-                setting_object = setting_object.replace(category, category_instance)
+                for _ in range(len(category)):
+                    category_instance = random.choice(tuple(category_set))
+                    setting_object = setting_object.replace(category, category_instance, 1)
             setting_object = setting_object.replace("- ", "-")
             # setting_object = setting_object.replace("\n", "\n\t")
             # print(setting_object)

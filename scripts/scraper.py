@@ -43,7 +43,7 @@ def get_rinkworks_names():
 def get_reedsy_names(char_type):
     url = f"http://webcache.googleusercontent.com/search?q=cache:https://blog.reedsy.com/character-name-generator/fantasy/{char_type}/"
     r = requests.get(url, fake_header)
-    save_html(r.content, 'names.html')
+    # save_html(r.content, 'names.html')
     soup = BeautifulSoup(r.content, 'html.parser')
     names = soup.find(id="names-container").select("h3")
     names = [name.string for name in names]
@@ -61,17 +61,26 @@ def get_fantasygen_names(char_type):
     char_type = "human"
     url = f"http://webcache.googleusercontent.com/search?q=cache:https://www.fantasynamegenerators.com/dnd-human-names.php"
     r = requests.get(url, fake_header)
-    save_html(r.content, 'names.html')
+    # save_html(r.content, 'names.html')
     soup = BeautifulSoup(r.content, 'html.parser')
     names = soup.select("genSection")
     print(names)
     return names
 
+def scrape(func, count, output):
+    f = open(output, "a")
+    for i in range(count):
+        if i % 10 == 0:
+            print(i)
+        try:
+            f.write('\n'.join(func()))
+        except:
+            print("failure")
+
 if __name__ == '__main__':
     all_names = set()
-    for _ in range(200):
-        all_names.update(get_names())
-
-    with open("names.txt", "w") as f:
+    with open("names.txt") as f:
+        for line in f:
+            all_names.add(line.strip())
+    with open("new_names.txt", "w") as f:
         f.write('\n'.join(all_names))
-
