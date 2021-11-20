@@ -11,12 +11,10 @@ from scripts.randGenerator import SettingGenerator
 
 class GeneratorApp(tp.AppTool):
 
-    def __init__(self, master, config):
+    def __init__(self, master, config, text_data_path):
         super().__init__(master, "generator")
         self.root = master
         self.selected = None
-
-        text_data_path = os.path.join(c.DATA_PATH, c.TEXT_PATH)
 
         with open(os.path.join(text_data_path, "config.json")) as f:
             config = json.load(f)

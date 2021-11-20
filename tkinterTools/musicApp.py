@@ -4,13 +4,12 @@ from functools import partial
 import tkinter as tk
 import tkmacosx as tkm
 import tkinterTools.templates as tp
-import tkinterTools.constants as c
 import scripts.musicPlayer as mp
 
 
 class MusicApp(tp.AppTool):
 
-    def __init__(self, master, config):
+    def __init__(self, master, config, playlist_path):
         super().__init__(master, "music")
         self.root = master
         self.selected = None
@@ -18,10 +17,10 @@ class MusicApp(tp.AppTool):
         self.last_ambient_track = None
         self.last_amb_track_id = None
 
-        with open(os.path.join(c.DATA_PATH, c.PLAYLIST_PATH, "moodPlaylists.json")) as f:
+        with open(os.path.join(playlist_path, "moodPlaylists.json")) as f:
             moodPlaylists = json.load(f)
 
-        with open(os.path.join(c.DATA_PATH, c.PLAYLIST_PATH, "ambiencePlaylists.json")) as f:
+        with open(os.path.join(playlist_path, "ambiencePlaylists.json")) as f:
             ambiencePlaylists = json.load(f)
 
         self.music_player = mp.MusicPlayer(moodPlaylists, ambiencePlaylists)

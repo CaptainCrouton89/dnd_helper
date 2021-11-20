@@ -8,6 +8,10 @@ from tkinter import ttk
 from tkinter import messagebox
 from tkinter.filedialog import askdirectory
 
+DATA_PATH = "data"
+TEXT_PATH = "text"
+PLAYLIST_PATH = "playlists"
+CAMPAIGN_PATH = "campaigns"
 
 def get_text(entry, output):
     output = entry.get()
@@ -99,7 +103,7 @@ class App():
             json.dump(self.config, f)
 
     def toggle_fullscreen(self, event=None):
-        self.state = not self.state  # Just toggling the boolean
+        self.state = not self.state
         self.root.attributes("-fullscreen", self.state)
         return "break"
 
@@ -127,24 +131,22 @@ class App():
         # Set up left_bar
         left_bar = tp.TemplateFrame(self.root)
         left_bar.grid(row=0, column=0, rowspan=2, sticky="nsew")
-        # left_bar.pack(side=tk.LEFT, expand=True, fill="both")
 
         left_bar.rowconfigure((0, 1), weight=0)
         left_bar.rowconfigure(2, weight=4)
 
-        self.music = musicApp.MusicApp(left_bar, config["music"])
+        self.music = musicApp.MusicApp(left_bar, config["music"], os.path.join(DATA_PATH, PLAYLIST_PATH))
         self.music.grid(row=0, column=0, sticky="nsew")
 
         self.dice = diceApp.DiceApp(left_bar, config["dice"])
         self.dice.grid(row=1, column=0, sticky="nsew")
 
-        self.generator = generatorApp.GeneratorApp(left_bar, config["generator"])       
+        self.generator = generatorApp.GeneratorApp(left_bar, config["generator"], os.path.join(DATA_PATH, TEXT_PATH))       
         self.generator.grid(row=2, column=0, sticky="nsew")
 
         # Set up central_content
         central_content = tp.TemplateFrame(self.root)
         central_content.grid(row=0, column=1, rowspan=2, sticky="nsew")
-        # central_content.pack(side=tk.LEFT, expand=True, fill="both")
 
         central_content.rowconfigure(0, weight=0)
         central_content.rowconfigure(1, weight=0)
@@ -229,13 +231,7 @@ class WorkspaceApp(tp.AppTool):
         contents.add(self.campaign_settings, text ='Campaign Setting')
 
 
-def load_config(path):
-    with open("config.json") as f:
-        config = json.load(f)
-    return config
-
 def main():
-    # config = load_config("config.json")   
     config = None 
     app = App(config)
     app.root.mainloop()
