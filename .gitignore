@@ -139,3 +139,4 @@ cython_debug/
 
 # Secret Keys
 *key.json
+.cache
