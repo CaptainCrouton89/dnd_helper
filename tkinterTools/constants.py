@@ -12,3 +12,8 @@ UNSELECTED_C = "white"
 
 SELECTED_D = "Gray75"
 UNSELECTED_D = "white"
+
+DATA_PATH = "tkinterTools/data"
+TEXT_PATH = "text"
+PLAYLIST_PATH = "playlists"
+CAMPAIGN_PATH = "campaigns"
