@@ -24,4 +24,11 @@ This app is a helping tool for running RPG games. Although it was designed speci
 * After downloading the code, try to run dndHelper.py
   * You will likely get a lot of `module not found` errors. Install whatever packages you are missing, either on your local machine or in a virtual environment
   * Keep trying to run until it works!
-* The music app only works if you set up a spotify key. Go (here)[https://developer.spotify.com/dashboard/login]
+* The music app only works if you set up a spotify key. Go here https://developer.spotify.com/dashboard/login and log in.
+  * Create new app
+  * Edit settings
+    * Go to `Redirect URIs` and change the website to https://google.com
+  * Change the name of the local file `example-spotifykey.json` to `spotifykey.json` and change the CID and SECRET fields in the json to those found on the dashboard.
+  * It should now work.
+* If the music app randomly stops working, manually open spotify, start playing a few different playlists, then quit the app. 
+* The app will try to manually open spotify if it's not open already. If you want the spotify functionality to work, you should give it permissions.
