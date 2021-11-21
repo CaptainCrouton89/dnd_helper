@@ -63,8 +63,8 @@ class MusicPlayer():
         self.user = self.sp.current_user()
         
         try:
-            print(self.sp.devices())
             self.device = self.sp.devices()["devices"][0]["id"]
+            print("Found device")
             print("Hiding spotify")
             try:
                 os.system("osascript -e \'tell application \"Finder\"\' -e \'set visible of process \"Spotify\" to false\' -e \'end tell\'")
@@ -74,7 +74,7 @@ class MusicPlayer():
         except:
             print("Could not find device.")
             return False
-        print("Found device")
+        
     
     def _play(self, id, uri_type):
         try:

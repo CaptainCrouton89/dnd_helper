@@ -77,23 +77,13 @@ class TrackerApp(tp.AppTool):
         self.bind("<Command-r>", self.roll)
         self.bind("<Command-v>", self.copy_selected)
         self.bind("<Command-s>", self.save_encounter)
-        self.bind("<Command-o>", self.load_encounter)
-
-        self.bind("<Control-n>", self.new_shelf)
-        self.bind("<Control-t>", self.next_turn)
-        self.bind("<Control-Shift-BackSpace>", self.delete_all)
-        self.bind("<Control-r>", self.roll)
-        self.bind("<Control-v>", self.copy_selected)
-        self.bind("<Control-s>", self.save_encounter)
-        self.bind("<Control-o>", self.load_encounter)
-
-        # self.root.bind("<Command-/>", self._focus)
+        self.bind("<Command-o>", self.open_encounter)
 
         self.shelves = []
         self.focus_index = 0
 
         self.add_widgets(config)
-        self.new_shelf()
+        self.load_encounter(config)
 
     def add_widgets(self, config):
         self.columnconfigure(0, weight=1)
@@ -103,24 +93,28 @@ class TrackerApp(tp.AppTool):
         self.header = tk.Frame(self)
         self.header.grid(row=0, column=0)
 
-        self.header.columnconfigure([0, 1, 2, 3, 4, 5, 6, 7], weight=1)
+        # self.header.columnconfigure(weight=1)
 
         self.title = tk.Entry(self.header)
-        self.title.grid(row=0, column=0, sticky="e")
+        self.title.grid(row=0, column=0, sticky="ew")
         if config:
             self.title.insert(tk.INSERT, config["title"])
 
-        self.turn_counter = UpDownButton(self.header, prefix="TURN: ", inverted=True)
-        self.turn_counter.grid(row=0, column=6, sticky="e")
 
-        open = tkm.Button(self.header, text="Open", command=self.load_encounter, takefocus=0)
-        open.grid(row=0, column=1, sticky="w")
+        new = tkm.Button(self.header, text="New Mob", command=self.add_shelf, takefocus=0)
+        new.grid(row=0, column=1, sticky="w")
+
+        open = tkm.Button(self.header, text="Open", command=self.open_encounter, takefocus=0)
+        open.grid(row=0, column=2, sticky="w")
 
         save = tkm.Button(self.header, text="Save", command=self.save_encounter, takefocus=0)
-        save.grid(row=0, column=2, sticky="w")
+        save.grid(row=0, column=3, sticky="w")
 
         keybinds = tkm.Button(self.header, text="Keybinds", command=self.open_keybinds, takefocus=0)
-        keybinds.grid(row=0, column=3, sticky="w")
+        keybinds.grid(row=0, column=4, sticky="w")
+
+        self.turn_counter = UpDownButton(self.header, prefix="TURN: ", inverted=True)
+        self.turn_counter.grid(row=0, column=5, sticky="e")
 
         self.content = tk.Frame(master=self)
         self.content.grid(row=1, column=0, sticky="ew")
@@ -157,7 +151,7 @@ class TrackerApp(tp.AppTool):
     def new_shelf(self, event=None):
         self.add_shelf(default_mob)
 
-    def add_shelf(self, config):
+    def add_shelf(self, config=default_mob):
         shelf = MobShelf(self.content, self, config=config)
         shelf.pack(side=tk.TOP, fill='x', expand=True)
         self.set_focus_at()
@@ -179,21 +173,33 @@ class TrackerApp(tp.AppTool):
         if self.shelves:
             self.shelves[index].focus_set()
 
-    def load_encounter(self, event=None):
+    def open_encounter(self, event=None):
         self.delete_all()
         in_file = askopenfile(title="Open Encounter", initialdir=os.path.join(self.get_dir(), "encounters"), filetypes=[("JSON", "*.json")])
-        all_mobs = json.load(in_file)
-        for mob_config in all_mobs:
+        if not in_file:
+            return
+        config = json.load(in_file)
+        self.load_encounter(config)
+        
+    def load_encounter(self, config):
+        for mob_config in config["mobs"]:
             self.add_shelf(mob_config)
+        self.title.delete(0, 'end')
+        self.title.insert(tk.INSERT, config["title"])
 
     def save_encounter(self, event=None):
+        print(self.title.get())
         save_path = os.path.join(self.get_dir(), "encounters", self.title.get() + ".json")
         # out_file = asksaveasfile(title="Save Encounter", initialdir=save_path, defaultextension=".json")
+        config = self.get_config()        
+        json.dump(config, open(save_path, "w"))
+
+    def get_config(self):
         all_mobs = []
         for shelf in self.shelves:
             config = shelf.get_config()
             all_mobs.append(config)
-        json.dump(all_mobs, open(save_path, "w"))
+        return {"title": self.title.get(), "mobs": all_mobs}
 
     def delete_all(self, event=None):
         self.turn_counter.val = 0
@@ -221,10 +227,9 @@ class MobShelf(tk.Frame):
         self.bind("<Command-BackSpace>", self.delete)
         self.bind("<Control-BackSpace>", self.delete)
 
-        content = self.add_widgets()
-        self.fill_content(content, config)
+        self.add_widgets(config)
 
-    def add_widgets(self):
+    def add_widgets(self, config):
         tailer = tk.Frame(master=self)
         bt_delete = tkm.Button(master=tailer, text="X", command=self.destroy, takefocus=0, width=30, bg="brown2")
 
@@ -247,9 +252,7 @@ class MobShelf(tk.Frame):
         content.columnconfigure(1, weight=0)
         content.columnconfigure(2, weight=0)
         content.columnconfigure(3, weight=1)
-        return content
 
-    def fill_content(self, content, config):
         # Health box
         self.name.insert(tk.END, config["name"])
 

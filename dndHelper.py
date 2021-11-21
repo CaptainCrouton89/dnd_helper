@@ -67,7 +67,7 @@ class App():
 
             sessions = os.listdir(os.path.join(self.campaign_dir, "sessions"))
             sessions = [session for session in sessions if ".DS_Store" not in session]
-            max_session = [None, 0]
+            max_session = [None, -1]
             for session in sessions:
                 print(session)
                 num = int(session.replace("session_", "").replace(".json", ""))
@@ -101,7 +101,8 @@ class App():
         session_num = self.config["campaign_data"]["session_num"]
         save_path = os.path.join(self.campaign_dir, "sessions", f"session_{session_num}.json")
         
-        with open(save_path, "w+") as f:
+        with open(save_path, "w") as f:
+            print(self.config)
             json.dump(self.config, f)
 
     def toggle_fullscreen(self, event=None):
