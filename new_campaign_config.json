@@ -1,0 +1,25 @@
+{
+    "session_data": {
+        "music": {},
+        "dice": {},
+        "generator": {},
+        "workspace": {
+            "session_notes": {},
+            "tracker": {
+                "title": "",
+                "mobs": []
+            },
+            "campaign_settings": {
+                "directory": ""
+            }
+        },
+        "worldnotes": {
+            "locations": [],
+            "entities": []
+        }
+    },
+    "campaign_data": {
+        "campaign_name": "",
+        "session_num": 0
+    }
+}

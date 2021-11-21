@@ -29,22 +29,37 @@ APP_BINDINGS = {
 
 class App():
 
-    def __init__(self, config=None):
+    def __init__(self, settings, force_config=None):
+        self.settings = settings
         self.root = tk.Tk()
         self.root.title('D&D Helper')
         self.root.id = "root"
         self.root.app = self
         self.state = False
 
+        self.initialize_with_settings()
+
         self.root.bind("<Control-f>", self.toggle_fullscreen)
         self.root.bind("<Escape>", self.end_fullscreen)
-        self.root.bind("<Command-s>", self.save_session)
+        self.root.bind(f"<{self.alt_key}-s>", self.save_session)
 
         for binding, _ in APP_BINDINGS.items():
-            self.root.bind(f"<Command-{binding}>", self.focus_on_app)
+            self.root.bind(f"<{self.alt_key}-{binding}>", self.focus_on_app)
 
-        self.load_campaign(config)
+        self.load_campaign(force_config)
         
+
+    def initialize_with_settings(self):
+        if not self.settings["campaigns_folder"]:
+            self.settings["campaigns_folder"] = askdirectory(title="Select a folder to store campaigns")
+            with open("settings.json", "w") as f:
+                json.dump(self.settings, f, indent=4)
+        if self.settings["use_command_instead_of_control"]:
+            self.alt_key = "Command"
+        else:
+            self.alt_key = "Control"
+        if self.settings["auto_fullscreen"]:
+            self.toggle_fullscreen()
 
     def get_session_config(self) -> dict:
         return {
@@ -62,7 +77,7 @@ class App():
 
     def load_campaign(self, config):
         if not config:
-            self.campaign_dir = askdirectory(title="Open Campaign", initialdir=os.path.expanduser("~/campaigns"))
+            self.campaign_dir = askdirectory(title="Open Campaign", initialdir=self.settings["campaigns_folder"])
             self.initialize_dir(self.campaign_dir)
 
             sessions = os.listdir(os.path.join(self.campaign_dir, "sessions"))
@@ -76,7 +91,7 @@ class App():
                     max_session[1] = num
 
             if max_session[0] == None:
-                with open(os.path.expanduser("~/campaigns/.new_campaign_config.json")) as f:
+                with open("new_campaign_config.json") as f:
                     config = json.load(f)
             else:
                 with open(os.path.join(self.campaign_dir, "sessions", max_session[0])) as f:
@@ -102,8 +117,10 @@ class App():
         save_path = os.path.join(self.campaign_dir, "sessions", f"session_{session_num}.json")
         
         with open(save_path, "w") as f:
-            print(self.config)
-            json.dump(self.config, f)
+            json.dump(self.config, f, indent=4)
+
+        with open("settings.json") as f:
+            json.dump(self.settings, f, indent=4)
 
     def toggle_fullscreen(self, event=None):
         self.state = not self.state
@@ -235,8 +252,10 @@ class WorkspaceApp(tp.AppTool):
 
 
 def main():
-    config = None 
-    app = App(config)
+    with open("settings.json") as f:
+        settings = json.load(f)
+        f.close()
+    app = App(settings)
     app.root.mainloop()
 
 
