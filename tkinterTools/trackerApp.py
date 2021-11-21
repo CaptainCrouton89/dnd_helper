@@ -361,7 +361,7 @@ class MobShelf(tk.Frame):
             "cun_die": self.cunning.bt_die.val,
             "cun_mod": self.cunning.bt_mod.val,
             "def": self.defense.bt_def.val,
-            "notes": self.notes.get("1.0", tk.END)
+            "notes": self.notes.get("1.0",'end-1c')
         }
         return config
 
