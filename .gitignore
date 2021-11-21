@@ -138,5 +138,5 @@ dmypy.json
 cython_debug/
 
 # Secret Keys
-*key.json
+spotifykey.json
 .cache

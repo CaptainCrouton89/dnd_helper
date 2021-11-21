@@ -1,0 +1,7 @@
+{
+    "USERNAME": "your-spotify-username",
+    "CID": "32-character-sequence",
+    "SECRET": "a-different-32-character-sequence",
+    "REDIRECT_URI": "https://google.com",
+    "SCOPE": "app-remote-control user-read-playback-state user-read-playback-position user-library-read playlist-modify-private user-read-currently-playing streaming user-modify-playback-state user-read-recently-played"
+}
