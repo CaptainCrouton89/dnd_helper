@@ -119,7 +119,7 @@ class App():
         with open(save_path, "w") as f:
             json.dump(self.config, f, indent=4)
 
-        with open("settings.json") as f:
+        with open("settings.json", "w") as f:
             json.dump(self.settings, f, indent=4)
 
     def toggle_fullscreen(self, event=None):

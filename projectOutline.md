@@ -1,5 +1,23 @@
 # Outline
 
+## MVP2 Goals
+- Make monsters generate automatically from basic templates. Give the campaign the player levels, let it work the magic
+- Automatically name the monsters/number them upon duplication
+- Fix the dimensions of the windows
+- Quit and reopen spotify to get it to work?
+- Make it so windows don't just randomly open up when you switch screens
+- Autosave functionality?
+- More generators!
+- More/better playlists
+- Better hotkey bindings
+
+### Story Generator Overhaul
+- Story-level encounter generation: What does this settlment not have enough of?
+- What does this group have an excess of?
+- What conflicts does this group face (not necessarily violent, just difficulties)
+- Government organization, view of outsiders, key people
+- 
+
 ## Initial Goals (MVP)
 - Should be as general purpose as possible, replacing the things most obnoxious about using computer
 - Need to lean into it's portability: Going somewhere, and can only bring one thing? Bring this.
