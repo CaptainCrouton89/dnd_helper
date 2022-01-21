@@ -16,7 +16,7 @@
 - What does this group have an excess of?
 - What conflicts does this group face (not necessarily violent, just difficulties)
 - Government organization, view of outsiders, key people
-- 
+- This is a change
 
 ## Initial Goals (MVP)
 - Should be as general purpose as possible, replacing the things most obnoxious about using computer
