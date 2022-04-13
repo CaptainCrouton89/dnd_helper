@@ -1,101 +1,187 @@
-Abbey of the
-Aerie of the
-Asylum of the
-Aviary of the
-Barracks of the
-Bastion of the
-Bazaar of the
-Bluffs of the
-Brewery of the
-Bridge of the
-Cairn of the
-Canyon of the
-Carnival of the
-Castle of the
-Cathedral of the
-Cellars of the
-Chapel of the
-Chapterhouse of the
-Church of the
-City of the
-Cliffs of the
-Cloister of the
-Cocoon of the
-Coliseum of the
-Contrivance of the
-Cottage of the
-Court of the
-Crags of the
-Craters of the
-Crypt of the
-Demi-plane of the
-Dens of the
-Dimension of the
-Domain of the
-Dome of the
-Dungeons of the
-Dwelling of the
-Edifice of the
-Fane of the
-Farm of the
-Forest of the
-Forge of the
-Fortress of the
-Foundry of the
-Galleon of the
-Galleries of the
-Garden of the
-Garrison of the
-Generator of the
-Glade of the
-Globe of the
-Grotto of the
-Hall of the
-Halls of the
-Harbor of the
-Hatcheries of the
-Haven of the
-Hill of the
-Hive of the
-Holt of the
-House of the
-Hut of the
-Island of the
-Isles of the
-Jungle of the
-Keep of the
-Kennels of the
-Labyrinth of the
-Lair of the
-Lighthouse of the
-Lodgings of the
-Manse of the
-Mansion of the
-Marsh of the
-Maze of the
-Megalith of the
-Mill of the
-Mines of the
-Monastery of the
-Monolith of the
-Mounds of the
-Necropolis of the
-Nest of the
-Obelisk of the
-Outpost of the
-Pagoda of the
-Palace of the
-Pavilion of the
-Pits of the
-Prison of the
-Pyramid of the
-Rift of the
-Sanctuary of the
-Sanctum of the
-Shrine of the
-Spire of the
-Stockades of the
-Stronghold of the
-Tower of the
-Webs of the
-Zeppelin of the
+Destabilization
+Citadel
+Obelisk
+Hut
+Globe
+Explosions
+Brewery
+Craters
+Carnival
+Aerie
+Forge
+Farm
+Mines
+Monastery
+Caves
+Chapel
+Pagoda
+Cottage
+Pavillion
+Shrine
+Malestorm
+Swamp
+Demi-plane
+Progression
+Crag
+Ossuary
+Ruins
+Labyrinth
+Gauntlet
+Bluffs
+Dome
+Explosion
+Vortex
+Woods
+Twist
+Court
+Negation
+Jungle
+Tomb
+Hill
+Crypt
+Cloister
+Haven
+Temple
+Foundry
+Torus
+Nexus
+Mountain
+Palace
+Pavilion
+Disjunction
+Prison
+Field
+Pulse
+Mounds
+Hive
+Forest
+Manse
+Durance
+Generator
+Contrivance
+Bifrucation
+Tunnel
+Interruption
+Warp
+Woodlands
+Stronghold
+Grave
+Area
+Bazaar
+Lair
+Aviary
+Dwelling
+Cascade
+Galleries
+Dunjon
+House
+Megalith
+Gorge
+Moor
+Zeppelin
+Dimension
+Catacombs
+Canyon
+Chapterhouse
+Monolith
+Nexi
+Fluctuation
+Mass
+Barracks
+Cenotaph
+Cancellation
+Fane
+Pits
+Fortress
+Maze
+Harbor
+Bastion
+Domain
+Hall
+Tempest
+Domicile
+Grid
+Zone
+Mill
+Tunnels
+Dungeon
+Pit
+Tower
+Valley
+Isles
+Kennels
+Arena
+Marsh
+Sanctum
+Degeneration
+Locus
+Cairn
+Sepulcher
+Halls
+Stream
+Mansion
+Webs
+Dungeons
+Keep
+Cathedral
+Abbey
+Vault
+Coliseum
+Enhancement
+Pulsation
+Desert
+Asylum
+Cocoon
+Bridge
+Tear
+Torrent
+Spire
+Dens
+Stockades
+Inversion
+Glade
+Galleon
+Mountains
+Abyss
+Flux
+Reversal
+Bursts
+Nest
+Matrix
+Aura
+Coleoseum
+Sanctuary
+Disruption
+Edifice
+Church
+Burst
+Disturbance
+Garrison
+Garden
+Loop
+Lighthouse
+Castle
+Outpost
+Hatcheries
+City
+Labrynth
+Demense
+Crags
+Island
+Cave
+Necropolis
+Grotto
+Flare
+Cliffs
+Fort
+Pyramid
+Lodgings
+Halo
+Oubliette
+Islands
+Cloud
+Catacomb
+Rift
+Cellars
+Storm
+Holt

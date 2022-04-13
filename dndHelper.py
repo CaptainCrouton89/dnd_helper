@@ -13,6 +13,8 @@ TEXT_PATH = "text"
 PLAYLIST_PATH = "playlists"
 CAMPAIGN_PATH = "campaigns"
 
+os.chdir(os.path.dirname(os.path.realpath(__file__)))
+
 def get_text(entry, output):
     output = entry.get()
 

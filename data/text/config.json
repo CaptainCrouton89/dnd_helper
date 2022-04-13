@@ -2,7 +2,22 @@
     "locations": {
         "target": "location",
         "path": "locations",
-        "format": "<structureDescription> <structure> <feature1> <feature2>"
+        "format": "<structureDescription> <structure> of the <feature1> <feature2>\n\n<adjective> <structure> of <mod>"
+    },
+    "locations2": {
+        "target": "location",
+        "path": "locations",
+        "format": "<adjective> <structure> of <mod>"
+    },
+    "conflict": {
+        "target": "conflict",
+        "path": "conflict",
+        "format": "<type> <conflict>"
+    },
+    "price": {
+        "target": "price",
+        "path": "conflict",
+        "format": "<heftyPrice>"
     },
     "settlements": {
         "target": "settlement",
@@ -28,5 +43,10 @@
         "target": "thing",
         "path": "things",
         "format": "<nounA> <adjectiveB>\n<adjectiveA> <nounB>\n<nounA> <adjectiveB>\n<adjectiveA> <nounB>"
+    },
+    "plot": {
+        "target": "plot",
+        "path": "plots",
+        "format": "<plot>\n\n<twist>"
     }
 }

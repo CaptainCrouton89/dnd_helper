@@ -19,7 +19,8 @@ class GeneratorApp(tp.AppTool):
         with open(os.path.join(text_data_path, "config.json")) as f:
             config = json.load(f)
 
-        self.location_generator = SettingGenerator(config["locations"], text_data_path, default_quantity=3)
+        self.location_generator = SettingGenerator(config["locations"], text_data_path, default_quantity=2)
+        self.conflict_generator = SettingGenerator(config["conflict"], text_data_path, default_quantity=3)
         self.settlement_generator = SettingGenerator(config["settlements"], text_data_path)
         self.monster_generator = SettingGenerator(config["monsters"], text_data_path)
         self.character_generator = SettingGenerator(config["characters"], text_data_path, default_quantity=1)
@@ -66,3 +67,7 @@ class GeneratorApp(tp.AppTool):
         settlement = tkm.Button(generators, text="Settlement",
                                 command=partial(self.generate, self.settlement_generator), takefocus=0)
         settlement.grid(row=2, column=0, sticky="nsew")
+        
+        conflict = tkm.Button(generators, text="Conflict",
+                                command=partial(self.generate, self.conflict_generator), takefocus=0)
+        conflict.grid(row=2, column=1, sticky="nsew")
