@@ -48,6 +48,8 @@ class SettingGenerator():
                     category_instance = random.choice(tuple(category_set))
                     setting_object = setting_object.replace(category, category_instance, 1)
             setting_object = setting_object.replace("- ", "-")
+            setting_object = setting_object.replace("\\n", "\n")
+            setting_object = setting_object.replace("\\t", "\t")
             # setting_object = setting_object.replace("\n", "\n\t")
             # print(setting_object)
             gen_text.append(setting_object)
