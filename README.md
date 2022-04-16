@@ -6,7 +6,7 @@ This app is a helping tool for running RPG games. Although it was designed speci
 
 ## Installing
 Download code, navigate to it in terminal, and run `./INSTALL.sh`. If you get a permissions error, run `chmod +x ./INSTALL.sh`, then try again. 
-You should now be good to go. You can open your terminal, and type `gen -h` to see the available options.
+You should now be good to go. If you open a new terminal window, you will be able to use the `gen` command to generate things. Just type `gen -h` to see the available options.
 
 ## Features
 5 primary tools built into the app:
