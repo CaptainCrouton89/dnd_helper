@@ -1,0 +1,4 @@
+beautifulsoup4==4.11.1
+requests==2.25.0
+spotipy==2.19.0
+tkmacosx==1.0.3

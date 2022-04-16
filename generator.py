@@ -1,8 +1,9 @@
 import argparse
 import json
 from scripts.randGenerator import SettingGenerator
+import os
 
-text_data_path = "/Users/silasrhyneer/Library/Containers/Generator/dnd/text"
+text_data_path = __file__.replace("generator.py", "/data/text")
 
 def do_until_quit(func):
     while True:
