@@ -1,8 +1,12 @@
-# dnd_helper
+# dnd_helper and generator
 
 __Main should always be stable release__
 
 This app is a helping tool for running RPG games. Although it was designed specifically for Heart Rush, I think anyone running a fantasy RPG game will find this tool useful. It allows a GM to track games, play music, roll dice, generate ideas, and all in one workplace. Download it and try it out. Just download the repo and run dndHelper.py. You may have to download some packages.
+
+## Installing
+Download code, navigate to it in terminal, and run `./INSTALL.sh`. If you get a permissions error, run `chmod +x ./INSTALL.sh`, then try again. 
+You should now be good to go. If you open a __new__ terminal window, you will be able to use the `gen` command to generate things. Just type `gen -h` to see the available options.
 
 ## Features
 5 primary tools built into the app:
