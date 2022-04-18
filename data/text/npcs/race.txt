@@ -45,4 +45,3 @@ Ghoul
 Revenant
 Trollkin
 Savant
-Thing
