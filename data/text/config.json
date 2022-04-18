@@ -2,7 +2,7 @@
     "locations": {
         "target": "location",
         "path": "locations",
-        "format": "<structureDescription> <structure> of the <feature1> <feature2>\n\n<adjective> <structure> of <mod>"
+        "format": "<structureDescription> <structure> of the <feature1> <feature2>\n<adjective> <structure> of <mod>"
     },
     "locations2": {
         "target": "location",
@@ -32,7 +32,7 @@
     "characters": {
         "target": "character",
         "path": "npcs",
-        "format": "<names>, <names>, <names>, <names>\n<names>, <names>, <names>, <names>\n\n<race>\n<race\n<race>\n\n<traitsCombined>\n\n<traitsCombined>\n\n<traitsCombined>"
+        "format": "<names>, <names>, <names>, <names>\n<names>, <names>, <names>, <names>\n\n<race>\n<race>\n<race>\n<race>\n\n<traitsCombined>\n<traitsCombined>\n<traitsCombined>"
     },
     "names": {
         "target": "name",
@@ -47,6 +47,6 @@
     "plot": {
         "target": "plot",
         "path": "plots",
-        "format": "<plot>\n\n<twist>"
+        "format": "<plot>\n<twist>"
     }
 }
