@@ -1,4 +1,4 @@
-
+import re
 """
 adjectives = set()
 nouns = set()
@@ -29,11 +29,12 @@ with open("locationMod.txt", "w+") as a_file:
 """
 
 nouns = set()
-with open("structureold.txt", "r") as a_file:
+with open("fantasyItemsOld.txt", "r") as a_file:
     for line in a_file:
-        stripped_line = line.strip()
-        stripped_line = stripped_line.split(" ")
-        nouns.add(stripped_line[0])
-with open("structure.txt", "w+") as a_file:
+        stripped_line = re.sub(r"(\w)([A-Z])", r"\1\n\2", line)
+        stripped_line = stripped_line.split("\n")
+        for sentence in stripped_line:
+            nouns.add(sentence)
+with open("fantasyItems.txt", "w+") as a_file:
     for noun in nouns:
         a_file.write(noun + "\n")

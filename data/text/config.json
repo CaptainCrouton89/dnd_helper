@@ -32,7 +32,7 @@
     "characters": {
         "target": "character",
         "path": "npcs",
-        "format": "<names>, <names>, <names>, <names>\n<names>, <names>, <names>, <names>\n\n<traitsCombined>\n\n<traitsCombined>\n\n<traitsCombined>"
+        "format": "<names>, <names>, <names>, <names>\n<names>, <names>, <names>, <names>\n\n<race>, <race>, <race>\n\n<traitsCombined>\n\n<traitsCombined>\n\n<traitsCombined>"
     },
     "names": {
         "target": "name",
@@ -42,7 +42,7 @@
     "things": {
         "target": "thing",
         "path": "things",
-        "format": "<nounA> <adjectiveB>\n<adjectiveA> <nounB>\n<nounA> <adjectiveB>\n<adjectiveA> <nounB>"
+        "format": "<fantasyItem>\n<fantasyItem>\n<fantasyItem>\n<fantasyItem>\n\n<nounA> <adjectiveB>\n<adjectiveA> <nounB>\n<nounA> <adjectiveB>\n<adjectiveA> <nounB>"
     },
     "plot": {
         "target": "plot",

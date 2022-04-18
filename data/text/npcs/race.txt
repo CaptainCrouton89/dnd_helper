@@ -1,0 +1,47 @@
+Human
+Oznak (human)
+Tikhaya (human)
+Vyanoweir (human)
+Jae-Kai (human)
+Drachma (human)
+Neth (human)
+Ulvsjael (human)
+Sharabha (human)
+Naga (human)
+Vyko (starling, planar elf)
+Eloweir (sea elf)
+Teflin (blood elf)
+Caerine (wood elf)
+Zaelian (moon elf)
+Amverela (high elf)
+Grendel (chord dwarf)
+Aureum (sun dwarf)
+Westari (dream dwarf)
+Yorinthian (winter dwarf)
+Hestrube (grayling, stone dwarf)
+Verucan (fire dwarf)
+Uline (chain dwarf)
+Drasnian (stout dwarf)
+Danaki (minotaur)
+Lorean (minotaur)
+Foxborne (gnome)
+Ezuri (tree gnome)
+Goshwen (hill gnome)
+Etherweaver (goblin)
+Coghead (goblin)
+Scalawag (goblin)
+Child of Anubis - Foresaken
+Child of Anubis - Servant
+Ix-Tyrann (lizard-folk)
+Krell (insect-folk)
+Kor (cat-folk)
+Satyr
+Enti
+Rusalka
+Deva
+Sylthik (snake-folk)
+Skaag (rat-folk)
+Ghoul
+Revenant
+Trollkin
+Savant

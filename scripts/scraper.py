@@ -1,4 +1,6 @@
+import random
 import requests
+import time
 from bs4 import BeautifulSoup
 
 fake_header = {
@@ -32,28 +34,13 @@ def open_html(path):
     with open(path, 'rb') as f:
         return f.read()
 
-def get_rinkworks_names():
-    url = "http://rinkworks.com/namegen/fnames.cgi?d=1&f=0"
+def get_ss_items():
+    url = "https://www.seventhsanctum.com/generate.php?Genname=magicitem"
     r = requests.get(url)
     soup = BeautifulSoup(r.content, 'html.parser')
-    names = soup.select_one('.fnames_results').select("td")
-    names = [name.string for name in names]
-    return names
-
-def get_reedsy_names(char_type):
-    url = f"http://webcache.googleusercontent.com/search?q=cache:https://blog.reedsy.com/character-name-generator/fantasy/{char_type}/"
-    r = requests.get(url, fake_header)
-    # save_html(r.content, 'names.html')
-    soup = BeautifulSoup(r.content, 'html.parser')
-    names = soup.find(id="names-container").select("h3")
-    names = [name.string for name in names]
-    return names
-
-def get_names():
-    names = []
-    names.extend(get_reedsy_names("human"))
-    names.extend(get_reedsy_names("elf"))
-    names.extend(get_rinkworks_names())
+    names = soup.find_all("div", {"class": "GeneratorResultPrimeBG"})
+    names.extend(soup.find_all("div", {"class": "GeneratorResultSecondaryBG"}))
+    names = [name.text for name in names]
     return names
 
 # Doesn't work—they've shielded the names from scraping
@@ -70,17 +57,15 @@ def get_fantasygen_names(char_type):
 def scrape(func, count, output):
     f = open(output, "a")
     for i in range(count):
+        time.sleep(random.random())
         if i % 10 == 0:
             print(i)
         try:
             f.write('\n'.join(func()))
         except:
             print("failure")
+    f.close()
 
 if __name__ == '__main__':
     all_names = set()
-    with open("names.txt") as f:
-        for line in f:
-            all_names.add(line.strip())
-    with open("new_names.txt", "w") as f:
-        f.write('\n'.join(all_names))
+    scrape(get_ss_items, 4000, "fantasyItems.txt")
