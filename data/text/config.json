@@ -32,7 +32,7 @@
     "characters": {
         "target": "character",
         "path": "npcs",
-        "format": "<names>, <names>, <names>, <names>\n<names>, <names>, <names>, <names>\n\n<race>, <race>, <race>\n\n<traitsCombined>\n\n<traitsCombined>\n\n<traitsCombined>"
+        "format": "<names>, <names>, <names>, <names>\n<names>, <names>, <names>, <names>\n\n<race>\n<race\n<race>\n\n<traitsCombined>\n\n<traitsCombined>\n\n<traitsCombined>"
     },
     "names": {
         "target": "name",
