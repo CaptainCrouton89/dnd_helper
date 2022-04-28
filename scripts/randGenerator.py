@@ -36,12 +36,11 @@ class SettingGenerator():
         #     json.dump(self.all_data, f)
         
     def generate(self):
-        print(f"""
-        ======================
-        Generating {self.target}
-        ----------------------
-        """)
-        gen_text = []
+        gen_text = [f"""
+===================================
+        Generating {self.target} 
+-----------------------------------
+        """]
         for _ in range(self.default_quantity):
             setting_object = self.format
             match = re.findall(r"<.+?>", self.format)
