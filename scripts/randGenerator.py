@@ -36,7 +36,11 @@ class SettingGenerator():
         #     json.dump(self.all_data, f)
         
     def generate(self):
-        # print(f"\n\tGenerating {self.target}")
+        print(f"""
+        ======================
+        Generating {self.target}
+        ----------------------
+        """)
         gen_text = []
         for _ in range(self.default_quantity):
             setting_object = self.format
